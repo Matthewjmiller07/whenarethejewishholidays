@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew&display=swap" rel="stylesheet">
+    <title>Jewish APIs Demo</title>
+    <style>
+        body {
+    font-family: 'Noto Sans Hebrew', sans-serif;
+    margin: 20px;
+    background-color: #f4f4f4;
+}
+h1, h2 {
+    color: #333;
+    text-align: center;
+}
+.api-section, .container {
+    background-color: white;
+    border: 2px solid #ddd;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+button, select, input[type="checkbox"] {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+button:hover {
+    background-color: #45a049;
+}
+p {
+    font-size: 14px;
+    color: #555;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+th {
+    background-color: #f8f8f8;
+}
+.past-holiday {
+    color: #888; /* Grey out past holidays */
+}
+.upcoming-holiday {
+    color: #4CAF50; /* Highlight upcoming holidays */
+}
+.center {
+    text-align: center;
+}
+#workdaysChart {
+    max-width: 300px;
+    max-height: 300px;
+    width: 100%;
+    height: auto;
+}
+#holidayCalendar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+    display: none; /* Initially hidden */
+}
+.calendar-month {
+    flex: 1 1 calc(33.33% - 20px); /* 3 months per row */
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 8px;
+    background-color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    overflow: hidden;
+    min-height: 400px;
+    margin-bottom: 20px;
+}
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+.calendar-day, .calendar-day-header {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+    font-size: 1em;
+}
+.calendar-day.empty {
+    background-color: #f4f4f4;
+}
+.calendar-day.holiday {
+    background-color: #ffcccc;
+}
+.calendar-day-header {
+    background-color: #f4f4f4;
+    font-weight: bold;
+}
+.calendar-month h3 {
+    text-align: center;
+    font-size: 1.2em;
+    margin: 5px 0;
+}
+
+@media (max-width: 1200px) {
+    .calendar-month {
+        flex: 1 1 calc(50% - 20px); /* 2 months per row */
+        min-height: 450px;
+    }
+}
+
+@media (max-width: 768px) {
+    .calendar-day, .calendar-day-header {
+        padding: 5px;
+        font-size: 0.8em;
+    }
+    .calendar-month {
+        flex: 1 1 calc(100% - 20px); /* 1 month per row */
+        padding: 10px;
+        min-height: 400px;
+    }
+}
+
+@media (max-width: 480px) {
+    .calendar-day, .calendar-day-header {
+        padding: 5px;
+        font-size: 0.7em;
+    }
+    .calendar-month {
+        padding: 10px;
+        min-height: 350px;
+    }
+}
+
+
+    </style>
+    
+    
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sizzle/2.3.6/sizzle.min.js"></script>
+    <!-- React and ReactDOM CDN Links -->
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <!-- Babel Script for In-Browser Transpilation -->
+    <script src="https://unpkg.com/babel@7.6.4/standalone/babel.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>When Are the Jewish Holidays?</h1>
+    
+    <div class="center">
+        <input type="checkbox" id="includeTishaBav" checked>
+        <label for="includeTishaBav">Include Tish'a B'Av in Calculations</label>
+    </div>
+
+    <div class="api-section">
+        <h2>Calculate Work Days Off for Jewish Holidays</h2>
+        <label for="yearSelect">Select Year:</label>
+        <select id="yearSelect"></select>
+        <button onclick="calculateDaysOff()">Calculate Days Off</button>
+        <div id="results"></div>
+        <canvas id="workdaysChart"></canvas>
+    </div>
+
+    <div class="api-section">
+        <h2>Calendar of Weekday Holidays</h2>
+        <button id="toggleCalendar">Show Calendar</button>
+        <div id="holidayCalendar"></div>
+    </div>
+
+    <div class="api-section">
+        <h2>Comparison of Weekday Holidays</h2>
+        <label for="startYearInput">Start Year:</label>
+        <input type="number" id="startYearInput" value="2020" min="1900" max="2100">
+        <label for="endYearInput">End Year:</label>
+        <input type="number" id="endYearInput" value="2025" min="1900" max="2100">
+        <button onclick="updateComparison()">Update Comparison</button>
+        <canvas id="comparisonChart"></canvas>
+    </div>
+    
+    
+  
+    
+    <!--
+    <div class="api-section">
+        <h2>Sefaria Texts</h2>
+        <p>This section dynamically fetches today's or the coming Thursday's 929 chapter schedule.</p>
+        <button id="fetch929">Fetch 929 Text</button>
+        <div id="sefariaText"></div>
+    </div>
+  
+    <div class="api-section">
+        <h2>Hebcal Shabbat Times for 60645</h2>
+        <p>This section uses jQuery to fetch Shabbat times for the 60645 area.</p>
+        <button id="fetchShabbat">Fetch Shabbat Times</button>
+        <div id="shabbatTimes"></div>
+    </div>
+
+-->
+    <div class="api-section">
+        <h2>Jewish Holiday Timeline</h2>
+        <p>This section dynamically fetches and displays Jewish holidays, highlighting past and upcoming dates.</p>
+        <button id="fetchHolidays">Fetch Holidays</button>
+        <div id="holidayList"></div>
+    </div>
+
+    <div class="api-section">
+        <h2>Visualize Holiday Countdown</h2>
+        <p>This section visualizes the countdown to upcoming holidays with a bar chart.</p>
+        <canvas id="holidayChart"></canvas>
+    </div>
+<!--
+    <div class="api-section">
+        <h2>Upcoming Parsha Readings</h2>
+        <p>This section dynamically fetches and displays upcoming weekly Torah portions with a countdown in days.</p>
+        <button id="fetchParashat">Fetch Parashat Readings</button>
+        <div id="parashatList"></div>
+    </div>
+-->
+
+    <!-- React Component for Additional Jewish Themed Content -->
+    <div id="reactApp"></div>
+
+    <script type="text/babel">
+        class ReactApp extends React.Component {
+            render() {
+                return (
+                    <div className="api-section">
+                        <h2>React Managed Jewish Events</h2>
+                        <p>This section is managed by React and demonstrates more dynamic interactions with a Jewish theme.</p>
+                        <div>Content generated by React...</div>
+                    </div>
+                );
+            }
+        }
+
+        ReactDOM.render(<ReactApp />, document.getElementById('reactApp'));
+    </script>
+<script>
+    $(document).ready(function() {
+        const currentYear = new Date().getFullYear();
+    
+        // Populate year selection dropdowns
+        for (let year = currentYear - 100; year <= currentYear + 100; year++) {
+            $('#yearSelect').append(new Option(year, year));
+            $('#startYearSelect').append(new Option(year, year));
+            $('#endYearSelect').append(new Option(year, year));
+        }
+        $('#yearSelect').val(currentYear);
+        $('#startYearSelect').val(currentYear - 5);
+        $('#endYearSelect').val(currentYear + 5);
+    
+        // Initial calculations
+        calculateDaysOff();
+        updateComparison();
+    
+        // Re-calculate when changes are made
+        $('#yearSelect, #includeTishaBav').change(calculateDaysOff);
+        $('#startYearSelect, #endYearSelect').change(updateComparison);
+    });
+    
+    var workdaysChart = null; // Hold the pie chart instance globally
+    var comparisonChart = null; // Hold the line chart instance globally
+    
+
+
+    
+    function fetchHolidayData(year, includeTishaBav, callback) {
+    const holidays = [
+        'Pesach I', 'Pesach II', 'Pesach VII', 'Pesach VIII',
+        'Shavuot I', 'Shavuot II',
+        'Sukkot I', 'Sukkot II',
+        'Shmini Atzeret', 'Simchat Torah'
+    ];
+
+    // Include these specific holidays only
+    const yearSpecificHolidays = [
+        'Rosh Hashana II', // Explicitly match "Rosh Hashana II"
+    ];
+
+    if (includeTishaBav) {
+        yearSpecificHolidays.push("Tish’a B’Av");
+    }
+
+    const apiUrl = `https://www.hebcal.com/hebcal/?v=1&cfg=json&year=${year}&maj=on&min=on&mod=on&nx=on&s=on`;
+    $.getJSON(apiUrl, function(data) {
+        let totalDaysOff = 0;
+        let totalHolidays = 0;
+        let details = '';
+
+        data.items.forEach(item => {
+            // Check for both fixed and dynamic year-specific holidays
+            if (holidays.includes(item.title) || yearSpecificHolidays.some(h => item.title === h) || 
+                (item.title.startsWith('Rosh Hashana ') && /\d+$/.test(item.title))) {
+                // The regex /\d+$/ checks if the title ends with a number, indicating a year
+                totalHolidays++;
+                const date = new Date(item.date);
+                date.setDate(date.getDate() + 1); // Adjust for sunset start
+                const dayOfWeek = date.getDay();
+                const weekdayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+                const dayName = weekdayNames[dayOfWeek];
+
+                if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Monday to Friday
+                    totalDaysOff++;
+                    details += `<li>${item.title} falls on ${dayName}, ${date.toLocaleDateString()} (which is a weekday). 
+<a href="#" onclick="addToGoogleCalendar('${item.title}', '${date.toISOString()}')">Add to Google Calendar</a></li>`;
+
+                }
+            }
+        });
+
+        callback(totalDaysOff, totalHolidays, details);
+    }).fail(function() {
+        console.error('Failed to fetch holiday data for ' + year);
+        callback(0, 0, ''); // Return 0 days off if failed
+    });
+}
+
+
+
+    
+    function updateComparison() {
+        const startYear = parseInt($('#startYearInput').val());
+        const endYear = parseInt($('#endYearInput').val());
+        const years = [];
+        const daysOff = [];
+    
+        for (let year = startYear; year <= endYear; year++) {
+            years.push(year);
+            fetchHolidayData(year, $('#includeTishaBav').is(':checked'), function(totalDaysOff) {
+                daysOff.push(totalDaysOff);
+    
+                if (years.length === daysOff.length) {
+                    if (comparisonChart) comparisonChart.destroy();
+                    var ctx = document.getElementById('comparisonChart').getContext('2d');
+                    comparisonChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: years,
+                            datasets: [{
+                                label: 'Workday Holidays',
+                                data: daysOff,
+                                fill: false,
+                                borderColor: '#4CAF50',
+                                tension: 0.1
+                            }]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            },
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    
+    
+    </script>
+    
+    
+    
+    
+
+
+
+
+
+
+
+
+
+    
+    
+    <script>
+
+        
+        $(document).ready(function() {
+            console.log("Document ready");
+
+            $('#fetch929').click(function() {
+                const today = new Date();
+                const dayOfWeek = today.getDay();
+                const thursday = 4;
+                let queryDate = new Date(today);
+                queryDate.setDate(today.getDate() + ((thursday + 7 - dayOfWeek) % 7));
+                const year = queryDate.getFullYear();
+                const month = queryDate.getMonth() + 1;
+                const day = queryDate.getDate();
+
+                $.ajax({
+                    url: `https://www.sefaria.org/api/calendars?year=${year}&month=${month}&day=${day}`,
+                    type: 'GET',
+                    success: function(calendarData) {
+                        const chapterRef = calendarData.calendar_items.find(item => item.title.en === '929')?.ref;
+                        const chapterTitle = calendarData.calendar_items.find(item => item.title.en === '929')?.displayValue.en;
+                        if (chapterRef) {
+                            $.ajax({
+                                url: `https://www.sefaria.org/api/texts/${chapterRef}`,
+                                type: 'GET',
+                                success: function(textData) {
+                                    let versesHtml = '<table><caption>' + chapterTitle + '</caption>';
+                                    textData.text.forEach((verse, index) => {
+                                        versesHtml += `<tr><th>Verse ${index + 1}</th><td>${verse}</td><td>${textData.he[index] || ''}</td></tr>`;
+                                    });
+                                    versesHtml += '</table>';
+                                    $('#sefariaText').html(versesHtml);
+                                },
+                                error: function() {
+                                    $('#sefariaText').text('Failed to fetch the text data.');
+                                }
+                            });
+                        } else {
+                            $('#sefariaText').text('No 929 text found for this date.');
+                        }
+                    },
+                    error: function() {
+                        $('#sefariaText').text('Failed to fetch calendar data.');
+                    }
+                });
+            });
+
+            $('#fetchParashat').click(function() {
+                console.log("Fetching Parashat");
+                $.ajax({
+                    url: 'https://www.hebcal.com/hebcal/?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&s=on',
+                    type: 'GET',
+                    success: function(data) {
+                        console.log("Data fetched for Parashat", data);
+                        const today = new Date();
+                        const parashat = data.items.filter(item => new Date(item.date) >= today && item.title.includes('Parashat'));
+                        parashat.sort((a, b) => new Date(a.date) - new Date(b.date));
+                        let listHtml = '<ul>';
+                        parashat.forEach(reading => {
+                            listHtml += `<li>${reading.title} on ${reading.date}</li>`;
+                        });
+                        listHtml += '</ul>';
+                        $('#parashatList').html(listHtml);
+                    },
+                    error: function() {
+                        console.error("Failed to fetch Parashat data");
+                        $('#parashatList').text('Failed to fetch Parashat data.');
+                    }
+                });
+            });
+
+            $('#fetchShabbat').click(function() {
+                $.ajax({
+                    url: 'https://www.hebcal.com/shabbat?cfg=json&m=50&a=on&geo=zip&zip=60645',
+                    type: 'GET',
+                    success: function(data) {
+                        var items = data.items.filter(item => item.category === 'candles');
+                        var listItems = items.map(item => `<li>${item.title}: ${item.date}</li>`).join('');
+                        $('#shabbatTimes').html(`<ul>${listItems}</ul>`);
+                    },
+                    error: function() {
+                        $('#shabbatTimes').text('Failed to fetch Shabbat times.');
+                    }
+                });
+            });
+
+            $('#fetchHolidays').click(function() {
+    console.log("Fetching holidays");
+    $.ajax({
+        url: 'https://www.hebcal.com/hebcal/?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&s=on',
+        type: 'GET',
+        success: function(data) {
+            console.log("Data fetched", data);
+            const today = new Date();
+            const holidays = data.items.filter(item => item.category === 'holiday');
+            holidays.sort((a, b) => new Date(a.date) - new Date(b.date));
+            let listHtml = '<ul>';
+            let labels = [];
+            let daysUntilData = [];
+            let backgroundColors = [];
+            let borderColors = [];
+            let monthGroups = {};
+
+            const monthColors = {
+                'January': { background: 'rgba(255, 99, 132, 0.2)', border: 'rgba(255, 99, 132, 1)' },
+                'February': { background: 'rgba(54, 162, 235, 0.2)', border: 'rgba(54, 162, 235, 1)' },
+                'March': { background: 'rgba(255, 206, 86, 0.2)', border: 'rgba(255, 206, 86, 1)' },
+                'April': { background: 'rgba(75, 192, 192, 0.2)', border: 'rgba(75, 192, 192, 1)' },
+                'May': { background: 'rgba(153, 102, 255, 0.2)', border: 'rgba(153, 102, 255, 1)' },
+                'June': { background: 'rgba(255, 159, 64, 0.2)', border: 'rgba(255, 159, 64, 1)' },
+                'July': { background: 'rgba(199, 199, 199, 0.2)', border: 'rgba(199, 199, 199, 1)' },
+                'August': { background: 'rgba(83, 102, 255, 0.2)', border: 'rgba(83, 102, 255, 1)' },
+                'September': { background: 'rgba(255, 128, 64, 0.2)', border: 'rgba(255, 128, 64, 1)' },
+                'October': { background: 'rgba(192, 75, 192, 0.2)', border: 'rgba(192, 75, 192, 1)' },
+                'November': { background: 'rgba(102, 153, 255, 0.2)', border: 'rgba(102, 153, 255, 1)' },
+                'December': { background: 'rgba(128, 255, 128, 0.2)', border: 'rgba(128, 255, 128, 1)' }
+            };
+
+            holidays.forEach(holiday => {
+                const holidayDate = new Date(holiday.date);
+                const monthName = holidayDate.toLocaleString('default', { month: 'long' });
+                const daysUntil = Math.ceil((holidayDate - today) / (1000 * 60 * 60 * 24));
+                const listItemClass = daysUntil < 0 ? "past-holiday" : "upcoming-holiday";
+                listHtml += `<li class="${listItemClass}">${holiday.title} - ${daysUntil >= 0 ? 'in ' + daysUntil + ' days' : Math.abs(daysUntil) + ' days ago'}</li>`;
+                labels.push(holiday.title);
+                daysUntilData.push(daysUntil);
+                backgroundColors.push(monthColors[monthName].background);
+                borderColors.push(monthColors[monthName].border);
+                if (!monthGroups[monthName]) {
+                    monthGroups[monthName] = [];
+                }
+                monthGroups[monthName].push(labels.length - 1);
+            });
+            listHtml += '</ul>';
+            $('#holidayList').html(listHtml);
+
+            console.log("Preparing chart");
+            var ctx = document.getElementById('holidayChart').getContext('2d');
+            if (!ctx) {
+                console.error("Failed to get context");
+                return;
+            }
+
+            var holidayChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Days Until Holiday',
+                        data: daysUntilData,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: [{
+                    id: 'custom_labels',
+                    afterDatasetsDraw: function(chart, args, options) {
+                        const ctx = chart.ctx;
+                        Object.keys(monthGroups).forEach(month => {
+                            const group = monthGroups[month];
+                            const start = group[0];
+                            const end = group[group.length - 1];
+                            const xStart = chart.getDatasetMeta(0).data[start].x;
+                            const xEnd = chart.getDatasetMeta(0).data[end].x;
+                            const xMid = (xStart + xEnd) / 2;
+                            const yPosition = Math.min(...group.map(index => chart.getDatasetMeta(0).data[index].y)) - 15;
+                            ctx.save();
+                            ctx.fillStyle = 'white';
+                            ctx.fillRect(xMid - 20, yPosition - 12, 40, 16); // Draw white rectangle behind the text
+                            ctx.fillStyle = monthColors[month].border;
+                            ctx.font = '12px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(month, xMid, yPosition);
+                            ctx.restore();
+                        });
+
+                        // Mark the current date
+                        const todayIndex = labels.findIndex(label => new Date(data.items.find(item => item.title === label).date) > today);
+                        if (todayIndex > 0) {
+                            const bar = chart.getDatasetMeta(0).data[todayIndex];
+                            ctx.save();
+                            ctx.strokeStyle = 'red';
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.moveTo(bar.x, chart.scales.y.top);
+                            ctx.lineTo(bar.x, chart.chartArea.bottom);
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
+                }]
+            });
+        },
+        error: function() {
+            console.error("Failed to fetch holiday data");
+            $('#holidayList').text('Failed to fetch holiday data.');
+        }
+    });
+});
+
+        });
+
+        function addToGoogleCalendar(title, startDate) {
+    const formatDate = (date) => {
+        // Format as YYYYMMDD for all-day events
+        return date.toISOString().substring(0, 10).replace(/-/g, '');
+    };
+
+    const start = new Date(startDate);
+    const end = new Date(start);
+    end.setDate(start.getDate() + 1); // Set the end date to the next day for all-day events
+
+    const url = [
+        'https://calendar.google.com/calendar/render',
+        '?action=TEMPLATE',
+        `&text=${encodeURIComponent(title)}`,
+        `&dates=${formatDate(start)}/${formatDate(end)}`,
+        '&details=' + encodeURIComponent(`Added via Jewish Holiday Calendar.`)
+    ].join('');
+
+    window.open(url, '_blank'); // Open the link in a new tab
+}
+
+function calculateDaysOff() {
+    const currentYear = new Date().getFullYear();
+    const selectedYear = $('#yearSelect').val();
+    const includeTishaBav = $('#includeTishaBav').is(':checked');
+
+    fetchHolidayData(selectedYear, includeTishaBav, function(totalDaysOff, totalHolidays, holidayDetails) {
+        // Determine if the selected year is in the past
+        const isPast = selectedYear < currentYear;
+        const verbTense = isPast ? "needed" : "need";
+
+        $('#results').html(`You ${verbTense} to take <strong>${totalDaysOff}</strong> workday holidays off work in ${selectedYear}.<ul>${holidayDetails}</ul>`);
+
+        if (workdaysChart) workdaysChart.destroy();
+        var ctx = document.getElementById('workdaysChart').getContext('2d');
+        workdaysChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Workday Holidays', 'Weekend Holidays'],
+                datasets: [{
+                    data: [totalDaysOff, totalHolidays - totalDaysOff],
+                    backgroundColor: ['#4CAF50', '#DDDDDD'],
+                    hoverBackgroundColor: ['#45a049', '#CCCCCC']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        // Call displayHolidayCalendar after results are populated
+        displayHolidayCalendar();
+    });
+}
+
+function displayHolidayCalendar() {
+    console.log("Starting to display holiday calendar");
+
+    const results = $('#results').find('ul li');
+    const holidays = [];
+
+    results.each(function() {
+        const holidayText = $(this).text();
+        console.log("Processing result item:", holidayText);
+        
+        const match = holidayText.match(/(.+?)\sfalls\son\s(\w+),\s(\d+\/\d+\/\d+)\s\(which is a weekday\)/);
+        if (match) {
+            const holiday = {
+                title: match[1],
+                day: match[2],
+                date: new Date(match[3])
+            };
+            holidays.push(holiday);
+            console.log("Parsed holiday:", holiday);
+        } else {
+            console.log("No match for item:", holidayText);
+        }
+    });
+
+    console.log("All parsed holidays:", holidays);
+
+    const calendar = $('#holidayCalendar');
+    calendar.empty();
+
+    const currentYear = holidays.length > 0 ? holidays[0].date.getFullYear() : new Date().getFullYear();
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const weekdayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+    for (let month = 0; month < 12; month++) {
+        const firstDay = new Date(currentYear, month, 1).getDay();
+        const daysInMonth = new Date(currentYear, month + 1, 0).getDate();
+
+        console.log(`Processing month: ${monthNames[month]}, firstDay: ${firstDay}, daysInMonth: ${daysInMonth}`);
+
+        const monthDiv = $('<div class="calendar-month"></div>').append(`<h3>${monthNames[month]}</h3>`);
+        const daysGrid = $('<div class="calendar-days"></div>').css('display', 'grid').css('grid-template-columns', 'repeat(7, 1fr)');
+
+        // Add day headers
+        for (let i = 0; i < 7; i++) {
+            daysGrid.append(`<div class="calendar-day-header">${weekdayNames[i]}</div>`);
+        }
+
+        for (let i = 0; i < firstDay; i++) {
+            daysGrid.append('<div class="calendar-day empty"></div>');
+        }
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const date = new Date(currentYear, month, day);
+            const holiday = holidays.find(holiday => holiday.date.toDateString() === date.toDateString());
+            const dayDiv = $('<div class="calendar-day"></div>').text(day);
+            if (holiday) {
+                console.log(`Found holiday on ${date.toDateString()}: ${holiday.title}`);
+                dayDiv.addClass('holiday').append(`<br>${holiday.title}`);
+            }
+            daysGrid.append(dayDiv);
+        }
+
+        monthDiv.append(daysGrid);
+        calendar.append(monthDiv);
+    }
+}
+
+// Call this function after the results section is populated
+displayHolidayCalendar();
+
+// Toggle calendar visibility
+$('#toggleCalendar').click(function() {
+                $('#holidayCalendar').toggle();
+                const isVisible = $('#holidayCalendar').is(':visible');
+                $(this).text(isVisible ? 'Hide Calendar' : 'Show Calendar');
+            });
+
+
+
+
+
+
+
+    </script>
+
+    
+</body>
+</html>
