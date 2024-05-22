@@ -267,6 +267,224 @@ th {
     </script>
 <script>
     $(document).ready(function() {
+            console.log("Document ready");
+
+            $('#fetch929').click(function() {
+                const today = new Date();
+                const dayOfWeek = today.getDay();
+                const thursday = 4;
+                let queryDate = new Date(today);
+                queryDate.setDate(today.getDate() + ((thursday + 7 - dayOfWeek) % 7));
+                const year = queryDate.getFullYear();
+                const month = queryDate.getMonth() + 1;
+                const day = queryDate.getDate();
+
+                $.ajax({
+                    url: `https://www.sefaria.org/api/calendars?year=${year}&month=${month}&day=${day}`,
+                    type: 'GET',
+                    success: function(calendarData) {
+                        const chapterRef = calendarData.calendar_items.find(item => item.title.en === '929')?.ref;
+                        const chapterTitle = calendarData.calendar_items.find(item => item.title.en === '929')?.displayValue.en;
+                        if (chapterRef) {
+                            $.ajax({
+                                url: `https://www.sefaria.org/api/texts/${chapterRef}`,
+                                type: 'GET',
+                                success: function(textData) {
+                                    let versesHtml = '<table><caption>' + chapterTitle + '</caption>';
+                                    textData.text.forEach((verse, index) => {
+                                        versesHtml += `<tr><th>Verse ${index + 1}</th><td>${verse}</td><td>${textData.he[index] || ''}</td></tr>`;
+                                    });
+                                    versesHtml += '</table>';
+                                    $('#sefariaText').html(versesHtml);
+                                },
+                                error: function() {
+                                    $('#sefariaText').text('Failed to fetch the text data.');
+                                }
+                            });
+                        } else {
+                            $('#sefariaText').text('No 929 text found for this date.');
+                        }
+                    },
+                    error: function() {
+                        $('#sefariaText').text('Failed to fetch calendar data.');
+                    }
+                });
+            });
+
+            $('#fetchParashat').click(function() {
+                console.log("Fetching Parashat");
+                $.ajax({
+                    url: 'https://www.hebcal.com/hebcal/?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&s=on',
+                    type: 'GET',
+                    success: function(data) {
+                        console.log("Data fetched for Parashat", data);
+                        const today = new Date();
+                        const parashat = data.items.filter(item => new Date(item.date) >= today && item.title.includes('Parashat'));
+                        parashat.sort((a, b) => new Date(a.date) - new Date(b.date));
+                        let listHtml = '<ul>';
+                        parashat.forEach(reading => {
+                            listHtml += `<li>${reading.title} on ${reading.date}</li>`;
+                        });
+                        listHtml += '</ul>';
+                        $('#parashatList').html(listHtml);
+                    },
+                    error: function() {
+                        console.error("Failed to fetch Parashat data");
+                        $('#parashatList').text('Failed to fetch Parashat data.');
+                    }
+                });
+            });
+
+            $('#fetchShabbat').click(function() {
+                $.ajax({
+                    url: 'https://www.hebcal.com/shabbat?cfg=json&m=50&a=on&geo=zip&zip=60645',
+                    type: 'GET',
+                    success: function(data) {
+                        var items = data.items.filter(item => item.category === 'candles');
+                        var listItems = items.map(item => `<li>${item.title}: ${item.date}</li>`).join('');
+                        $('#shabbatTimes').html(`<ul>${listItems}</ul>`);
+                    },
+                    error: function() {
+                        $('#shabbatTimes').text('Failed to fetch Shabbat times.');
+                    }
+                });
+            });
+
+            $('#fetchHolidays').click(function() {
+    console.log("Fetching holidays");
+    $.ajax({
+        url: 'https://www.hebcal.com/hebcal/?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&s=on',
+        type: 'GET',
+        success: function(data) {
+            console.log("Data fetched", data);
+            const today = new Date();
+            const holidays = data.items.filter(item => item.category === 'holiday');
+            holidays.sort((a, b) => new Date(a.date) - new Date(b.date));
+            let listHtml = '<ul>';
+            let labels = [];
+            let daysUntilData = [];
+            let backgroundColors = [];
+            let borderColors = [];
+            let monthGroups = {};
+
+            const monthColors = {
+                'January': { background: 'rgba(255, 99, 132, 0.2)', border: 'rgba(255, 99, 132, 1)' },
+                'February': { background: 'rgba(54, 162, 235, 0.2)', border: 'rgba(54, 162, 235, 1)' },
+                'March': { background: 'rgba(255, 206, 86, 0.2)', border: 'rgba(255, 206, 86, 1)' },
+                'April': { background: 'rgba(75, 192, 192, 0.2)', border: 'rgba(75, 192, 192, 1)' },
+                'May': { background: 'rgba(153, 102, 255, 0.2)', border: 'rgba(153, 102, 255, 1)' },
+                'June': { background: 'rgba(255, 159, 64, 0.2)', border: 'rgba(255, 159, 64, 1)' },
+                'July': { background: 'rgba(199, 199, 199, 0.2)', border: 'rgba(199, 199, 199, 1)' },
+                'August': { background: 'rgba(83, 102, 255, 0.2)', border: 'rgba(83, 102, 255, 1)' },
+                'September': { background: 'rgba(255, 128, 64, 0.2)', border: 'rgba(255, 128, 64, 1)' },
+                'October': { background: 'rgba(192, 75, 192, 0.2)', border: 'rgba(192, 75, 192, 1)' },
+                'November': { background: 'rgba(102, 153, 255, 0.2)', border: 'rgba(102, 153, 255, 1)' },
+                'December': { background: 'rgba(128, 255, 128, 0.2)', border: 'rgba(128, 255, 128, 1)' }
+            };
+
+            holidays.forEach(holiday => {
+    const holidayDate = new Date(holiday.date);
+    const monthName = holidayDate.toLocaleString('default', { month: 'long' });
+    const currentYear = today.getFullYear();
+
+    // Ensure the holiday is within the current year
+    if (holidayDate.getFullYear() === currentYear) {
+        const daysUntil = Math.ceil((holidayDate - today) / (1000 * 60 * 60 * 24));
+        const listItemClass = daysUntil < 0 ? "past-holiday" : "upcoming-holiday";
+        listHtml += `<li class="${listItemClass}">${holiday.title} - ${daysUntil >= 0 ? 'in ' + daysUntil + ' days' : Math.abs(daysUntil) + ' days ago'}</li>`;
+        labels.push(holiday.title);
+        daysUntilData.push(daysUntil);
+        backgroundColors.push(monthColors[monthName].background);
+        borderColors.push(monthColors[monthName].border);
+        if (!monthGroups[monthName]) {
+            monthGroups[monthName] = [];
+        }
+        monthGroups[monthName].push(labels.length - 1);
+    }
+
+            });
+            listHtml += '</ul>';
+            $('#holidayList').html(listHtml);
+
+            console.log("Preparing chart");
+            var ctx = document.getElementById('holidayChart').getContext('2d');
+            if (!ctx) {
+                console.error("Failed to get context");
+                return;
+            }
+
+            var holidayChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Days Until Holiday',
+                        data: daysUntilData,
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: [{
+                    id: 'custom_labels',
+                    afterDatasetsDraw: function(chart, args, options) {
+                        const ctx = chart.ctx;
+                        Object.keys(monthGroups).forEach(month => {
+                            const group = monthGroups[month];
+                            const start = group[0];
+                            const end = group[group.length - 1];
+                            const xStart = chart.getDatasetMeta(0).data[start].x;
+                            const xEnd = chart.getDatasetMeta(0).data[end].x;
+                            const xMid = (xStart + xEnd) / 2;
+                            const yPosition = Math.min(...group.map(index => chart.getDatasetMeta(0).data[index].y)) - 15;
+                            ctx.save();
+                            ctx.fillStyle = 'white';
+                            ctx.fillRect(xMid - 20, yPosition - 12, 40, 16); // Draw white rectangle behind the text
+                            ctx.fillStyle = monthColors[month].border;
+                            ctx.font = '12px Arial';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(month, xMid, yPosition);
+                            ctx.restore();
+                        });
+
+                        // Mark the current date
+                        const todayIndex = labels.findIndex(label => new Date(data.items.find(item => item.title === label).date) > today);
+                        if (todayIndex > 0) {
+                            const bar = chart.getDatasetMeta(0).data[todayIndex];
+                            ctx.save();
+                            ctx.strokeStyle = 'red';
+                            ctx.lineWidth = 2;
+                            ctx.beginPath();
+                            ctx.moveTo(bar.x, chart.scales.y.top);
+                            ctx.lineTo(bar.x, chart.chartArea.bottom);
+                            ctx.stroke();
+                            ctx.restore();
+                        }
+                    }
+                }]
+            });
+        },
+        error: function() {
+            console.error("Failed to fetch holiday data");
+            $('#holidayList').text('Failed to fetch holiday data.');
+        }
+    });
+});
+
+        });
+    $(document).ready(function() {
     const currentYear = new Date().getFullYear();
 
     // Populate year selection dropdowns
@@ -459,218 +677,219 @@ function updateComparison() {
     <script>
 
         
-        $(document).ready(function() {
-            console.log("Document ready");
+$(document).ready(function() {
+    console.log("Document ready");
 
-            $('#fetch929').click(function() {
-                const today = new Date();
-                const dayOfWeek = today.getDay();
-                const thursday = 4;
-                let queryDate = new Date(today);
-                queryDate.setDate(today.getDate() + ((thursday + 7 - dayOfWeek) % 7));
-                const year = queryDate.getFullYear();
-                const month = queryDate.getMonth() + 1;
-                const day = queryDate.getDate();
+    $('#fetch929').click(function() {
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        const thursday = 4;
+        let queryDate = new Date(today);
+        queryDate.setDate(today.getDate() + ((thursday + 7 - dayOfWeek) % 7));
+        const year = queryDate.getFullYear();
+        const month = queryDate.getMonth() + 1;
+        const day = queryDate.getDate();
 
-                $.ajax({
-                    url: `https://www.sefaria.org/api/calendars?year=${year}&month=${month}&day=${day}`,
-                    type: 'GET',
-                    success: function(calendarData) {
-                        const chapterRef = calendarData.calendar_items.find(item => item.title.en === '929')?.ref;
-                        const chapterTitle = calendarData.calendar_items.find(item => item.title.en === '929')?.displayValue.en;
-                        if (chapterRef) {
-                            $.ajax({
-                                url: `https://www.sefaria.org/api/texts/${chapterRef}`,
-                                type: 'GET',
-                                success: function(textData) {
-                                    let versesHtml = '<table><caption>' + chapterTitle + '</caption>';
-                                    textData.text.forEach((verse, index) => {
-                                        versesHtml += `<tr><th>Verse ${index + 1}</th><td>${verse}</td><td>${textData.he[index] || ''}</td></tr>`;
-                                    });
-                                    versesHtml += '</table>';
-                                    $('#sefariaText').html(versesHtml);
-                                },
-                                error: function() {
-                                    $('#sefariaText').text('Failed to fetch the text data.');
-                                }
+        $.ajax({
+            url: `https://www.sefaria.org/api/calendars?year=${year}&month=${month}&day=${day}`,
+            type: 'GET',
+            success: function(calendarData) {
+                const chapterRef = calendarData.calendar_items.find(item => item.title.en === '929')?.ref;
+                const chapterTitle = calendarData.calendar_items.find(item => item.title.en === '929')?.displayValue.en;
+                if (chapterRef) {
+                    $.ajax({
+                        url: `https://www.sefaria.org/api/texts/${chapterRef}`,
+                        type: 'GET',
+                        success: function(textData) {
+                            let versesHtml = '<table><caption>' + chapterTitle + '</caption>';
+                            textData.text.forEach((verse, index) => {
+                                versesHtml += `<tr><th>Verse ${index + 1}</th><td>${verse}</td><td>${textData.he[index] || ''}</td></tr>`;
                             });
-                        } else {
-                            $('#sefariaText').text('No 929 text found for this date.');
+                            versesHtml += '</table>';
+                            $('#sefariaText').html(versesHtml);
+                        },
+                        error: function() {
+                            $('#sefariaText').text('Failed to fetch the text data.');
                         }
-                    },
-                    error: function() {
-                        $('#sefariaText').text('Failed to fetch calendar data.');
-                    }
-                });
-            });
-
-            $('#fetchParashat').click(function() {
-                console.log("Fetching Parashat");
-                $.ajax({
-                    url: 'https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}&maj=on&min=on&mod=on&nx=on&mf=on&s=on',
-                    type: 'GET',
-                    success: function(data) {
-                        console.log("Data fetched for Parashat", data);
-                        const today = new Date();
-                        const parashat = data.items.filter(item => new Date(item.date) >= today && item.title.includes('Parashat'));
-                        parashat.sort((a, b) => new Date(a.date) - new Date(b.date));
-                        let listHtml = '<ul>';
-                        parashat.forEach(reading => {
-                            listHtml += `<li>${reading.title} on ${reading.date}</li>`;
-                        });
-                        listHtml += '</ul>';
-                        $('#parashatList').html(listHtml);
-                    },
-                    error: function() {
-                        console.error("Failed to fetch Parashat data");
-                        $('#parashatList').text('Failed to fetch Parashat data.');
-                    }
-                });
-            });
-
-            $('#fetchShabbat').click(function() {
-                $.ajax({
-                    url: 'https://www.hebcal.com/shabbat?cfg=json&m=50&a=on&geo=zip&zip=60645',
-                    type: 'GET',
-                    success: function(data) {
-                        var items = data.items.filter(item => item.category === 'candles');
-                        var listItems = items.map(item => `<li>${item.title}: ${item.date}</li>`).join('');
-                        $('#shabbatTimes').html(`<ul>${listItems}</ul>`);
-                    },
-                    error: function() {
-                        $('#shabbatTimes').text('Failed to fetch Shabbat times.');
-                    }
-                });
-            });
-
-            $('#fetchHolidays').click(function() {
-    console.log("Fetching holidays");
-    $.ajax({
-        url: 'https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}&maj=on&min=on&mod=on&nx=on&mf=on&s=on',
-        type: 'GET',
-        success: function(data) {
-            console.log("Data fetched", data);
-            const today = new Date();
-            const holidays = data.items.filter(item => item.category === 'holiday');
-            holidays.sort((a, b) => new Date(a.date) - new Date(b.date));
-            let listHtml = '<ul>';
-            let labels = [];
-            let daysUntilData = [];
-            let backgroundColors = [];
-            let borderColors = [];
-            let monthGroups = {};
-
-            const monthColors = {
-                'January': { background: 'rgba(255, 99, 132, 0.2)', border: 'rgba(255, 99, 132, 1)' },
-                'February': { background: 'rgba(54, 162, 235, 0.2)', border: 'rgba(54, 162, 235, 1)' },
-                'March': { background: 'rgba(255, 206, 86, 0.2)', border: 'rgba(255, 206, 86, 1)' },
-                'April': { background: 'rgba(75, 192, 192, 0.2)', border: 'rgba(75, 192, 192, 1)' },
-                'May': { background: 'rgba(153, 102, 255, 0.2)', border: 'rgba(153, 102, 255, 1)' },
-                'June': { background: 'rgba(255, 159, 64, 0.2)', border: 'rgba(255, 159, 64, 1)' },
-                'July': { background: 'rgba(199, 199, 199, 0.2)', border: 'rgba(199, 199, 199, 1)' },
-                'August': { background: 'rgba(83, 102, 255, 0.2)', border: 'rgba(83, 102, 255, 1)' },
-                'September': { background: 'rgba(255, 128, 64, 0.2)', border: 'rgba(255, 128, 64, 1)' },
-                'October': { background: 'rgba(192, 75, 192, 0.2)', border: 'rgba(192, 75, 192, 1)' },
-                'November': { background: 'rgba(102, 153, 255, 0.2)', border: 'rgba(102, 153, 255, 1)' },
-                'December': { background: 'rgba(128, 255, 128, 0.2)', border: 'rgba(128, 255, 128, 1)' }
-            };
-
-            holidays.forEach(holiday => {
-                const holidayDate = new Date(holiday.date);
-                const monthName = holidayDate.toLocaleString('default', { month: 'long' });
-                const daysUntil = Math.ceil((holidayDate - today) / (1000 * 60 * 60 * 24));
-                const listItemClass = daysUntil < 0 ? "past-holiday" : "upcoming-holiday";
-                listHtml += `<li class="${listItemClass}">${holiday.title} - ${daysUntil >= 0 ? 'in ' + daysUntil + ' days' : Math.abs(daysUntil) + ' days ago'}</li>`;
-                labels.push(holiday.title);
-                daysUntilData.push(daysUntil);
-                backgroundColors.push(monthColors[monthName].background);
-                borderColors.push(monthColors[monthName].border);
-                if (!monthGroups[monthName]) {
-                    monthGroups[monthName] = [];
+                    });
+                } else {
+                    $('#sefariaText').text('No 929 text found for this date.');
                 }
-                monthGroups[monthName].push(labels.length - 1);
-            });
-            listHtml += '</ul>';
-            $('#holidayList').html(listHtml);
-
-            console.log("Preparing chart");
-            var ctx = document.getElementById('holidayChart').getContext('2d');
-            if (!ctx) {
-                console.error("Failed to get context");
-                return;
+            },
+            error: function() {
+                $('#sefariaText').text('Failed to fetch calendar data.');
             }
+        });
+    });
 
-            var holidayChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Days Until Holiday',
-                        data: daysUntilData,
-                        backgroundColor: backgroundColors,
-                        borderColor: borderColors,
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
+    $('#fetchParashat').click(function() {
+        console.log("Fetching Parashat");
+        $.ajax({
+            url: 'https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&mf=on&s=on',
+            type: 'GET',
+            success: function(data) {
+                console.log("Data fetched for Parashat", data);
+                const today = new Date();
+                const parashat = data.items.filter(item => new Date(item.date) >= today && item.title.includes('Parashat'));
+                parashat.sort((a, b) => new Date(a.date) - new Date(b.date));
+                let listHtml = '<ul>';
+                parashat.forEach(reading => {
+                    listHtml += `<li>${reading.title} on ${reading.date}</li>`;
+                });
+                listHtml += '</ul>';
+                $('#parashatList').html(listHtml);
+            },
+            error: function() {
+                console.error("Failed to fetch Parashat data");
+                $('#parashatList').text('Failed to fetch Parashat data.');
+            }
+        });
+    });
+
+    $('#fetchShabbat').click(function() {
+        $.ajax({
+            url: 'https://www.hebcal.com/shabbat?cfg=json&m=50&a=on&geo=zip&zip=60645',
+            type: 'GET',
+            success: function(data) {
+                var items = data.items.filter(item => item.category === 'candles');
+                var listItems = items.map(item => `<li>${item.title}: ${item.date}</li>`).join('');
+                $('#shabbatTimes').html(`<ul>${listItems}</ul>`);
+            },
+            error: function() {
+                $('#shabbatTimes').text('Failed to fetch Shabbat times.');
+            }
+        });
+    });
+
+    $('#fetchHolidays').click(function() {
+        console.log("Fetching holidays");
+        const year = $('#yearSelect').val(); // Ensure the year is dynamically selected
+        $.ajax({
+            url: `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}&maj=on&min=on&mod=on&nx=on&mf=on&s=on`,
+            type: 'GET',
+            success: function(data) {
+                console.log("Data fetched", data);
+                const today = new Date();
+                const holidays = data.items.filter(item => item.category === 'holiday');
+                holidays.sort((a, b) => new Date(a.date) - new Date(b.date));
+                let listHtml = '<ul>';
+                let labels = [];
+                let daysUntilData = [];
+                let backgroundColors = [];
+                let borderColors = [];
+                let monthGroups = {};
+
+                const monthColors = {
+                    'January': { background: 'rgba(255, 99, 132, 0.2)', border: 'rgba(255, 99, 132, 1)' },
+                    'February': { background: 'rgba(54, 162, 235, 0.2)', border: 'rgba(54, 162, 235, 1)' },
+                    'March': { background: 'rgba(255, 206, 86, 0.2)', border: 'rgba(255, 206, 86, 1)' },
+                    'April': { background: 'rgba(75, 192, 192, 0.2)', border: 'rgba(75, 192, 192, 1)' },
+                    'May': { background: 'rgba(153, 102, 255, 0.2)', border: 'rgba(153, 102, 255, 1)' },
+                    'June': { background: 'rgba(255, 159, 64, 0.2)', border: 'rgba(255, 159, 64, 1)' },
+                    'July': { background: 'rgba(199, 199, 199, 0.2)', border: 'rgba(199, 199, 199, 1)' },
+                    'August': { background: 'rgba(83, 102, 255, 0.2)', border: 'rgba(83, 102, 255, 1)' },
+                    'September': { background: 'rgba(255, 128, 64, 0.2)', border: 'rgba(255, 128, 64, 1)' },
+                    'October': { background: 'rgba(192, 75, 192, 0.2)', border: 'rgba(192, 75, 192, 1)' },
+                    'November': { background: 'rgba(102, 153, 255, 0.2)', border: 'rgba(102, 153, 255, 1)' },
+                    'December': { background: 'rgba(128, 255, 128, 0.2)', border: 'rgba(128, 255, 128, 1)' }
+                };
+
+                holidays.forEach(holiday => {
+                    const holidayDate = new Date(holiday.date);
+                    const monthName = holidayDate.toLocaleString('default', { month: 'long' });
+                    const daysUntil = Math.ceil((holidayDate - today) / (1000 * 60 * 60 * 24));
+                    const listItemClass = daysUntil < 0 ? "past-holiday" : "upcoming-holiday";
+                    listHtml += `<li class="${listItemClass}">${holiday.title} - ${daysUntil >= 0 ? 'in ' + daysUntil + ' days' : Math.abs(daysUntil) + ' days ago'}</li>`;
+                    labels.push(holiday.title);
+                    daysUntilData.push(daysUntil);
+                    backgroundColors.push(monthColors[monthName].background);
+                    borderColors.push(monthColors[monthName].border);
+                    if (!monthGroups[monthName]) {
+                        monthGroups[monthName] = [];
+                    }
+                    monthGroups[monthName].push(labels.length - 1);
+                });
+                listHtml += '</ul>';
+                $('#holidayList').html(listHtml);
+
+                console.log("Preparing chart");
+                var ctx = document.getElementById('holidayChart').getContext('2d');
+                if (!ctx) {
+                    console.error("Failed to get context");
+                    return;
+                }
+
+                var holidayChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Days Until Holiday',
+                            data: daysUntilData,
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
                         }
                     },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    }
-                },
-                plugins: [{
-                    id: 'custom_labels',
-                    afterDatasetsDraw: function(chart, args, options) {
-                        const ctx = chart.ctx;
-                        Object.keys(monthGroups).forEach(month => {
-                            const group = monthGroups[month];
-                            const start = group[0];
-                            const end = group[group.length - 1];
-                            const xStart = chart.getDatasetMeta(0).data[start].x;
-                            const xEnd = chart.getDatasetMeta(0).data[end].x;
-                            const xMid = (xStart + xEnd) / 2;
-                            const yPosition = Math.min(...group.map(index => chart.getDatasetMeta(0).data[index].y)) - 15;
-                            ctx.save();
-                            ctx.fillStyle = 'white';
-                            ctx.fillRect(xMid - 20, yPosition - 12, 40, 16); // Draw white rectangle behind the text
-                            ctx.fillStyle = monthColors[month].border;
-                            ctx.font = '12px Arial';
-                            ctx.textAlign = 'center';
-                            ctx.fillText(month, xMid, yPosition);
-                            ctx.restore();
-                        });
+                    plugins: [{
+                        id: 'custom_labels',
+                        afterDatasetsDraw: function(chart, args, options) {
+                            const ctx = chart.ctx;
+                            Object.keys(monthGroups).forEach(month => {
+                                const group = monthGroups[month];
+                                const start = group[0];
+                                const end = group[group.length - 1];
+                                const xStart = chart.getDatasetMeta(0).data[start].x;
+                                const xEnd = chart.getDatasetMeta(0).data[end].x;
+                                const xMid = (xStart + xEnd) / 2;
+                                const yPosition = Math.min(...group.map(index => chart.getDatasetMeta(0).data[index].y)) - 15;
+                                ctx.save();
+                                ctx.fillStyle = 'white';
+                                ctx.fillRect(xMid - 20, yPosition - 12, 40, 16); // Draw white rectangle behind the text
+                                ctx.fillStyle = monthColors[month].border;
+                                ctx.font = '12px Arial';
+                                ctx.textAlign = 'center';
+                                ctx.fillText(month, xMid, yPosition);
+                                ctx.restore();
+                            });
 
-                        // Mark the current date
-                        const todayIndex = labels.findIndex(label => new Date(data.items.find(item => item.title === label).date) > today);
-                        if (todayIndex > 0) {
-                            const bar = chart.getDatasetMeta(0).data[todayIndex];
-                            ctx.save();
-                            ctx.strokeStyle = 'red';
-                            ctx.lineWidth = 2;
-                            ctx.beginPath();
-                            ctx.moveTo(bar.x, chart.scales.y.top);
-                            ctx.lineTo(bar.x, chart.chartArea.bottom);
-                            ctx.stroke();
-                            ctx.restore();
+                            // Mark the current date
+                            const todayIndex = labels.findIndex(label => new Date(data.items.find(item => item.title === label).date) > today);
+                            if (todayIndex > 0) {
+                                const bar = chart.getDatasetMeta(0).data[todayIndex];
+                                ctx.save();
+                                ctx.strokeStyle = 'red';
+                                ctx.lineWidth = 2;
+                                ctx.beginPath();
+                                ctx.moveTo(bar.x, chart.scales.y.top);
+                                ctx.lineTo(bar.x, chart.chartArea.bottom);
+                                ctx.stroke();
+                                ctx.restore();
+                            }
                         }
-                    }
-                }]
-            });
-        },
-        error: function() {
-            console.error("Failed to fetch holiday data");
-            $('#holidayList').text('Failed to fetch holiday data.');
-        }
+                    }]
+                });
+            },
+            error: function() {
+                console.error("Failed to fetch holiday data");
+                $('#holidayList').text('Failed to fetch holiday data.');
+            }
+        });
     });
 });
 
-        });
 
         function addToGoogleCalendar(title, startDate) {
     const formatDate = (date) => {
