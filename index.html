@@ -174,6 +174,12 @@ th {
     <div class="center">
         <input type="checkbox" id="includeTishaBav" checked>
         <label for="includeTishaBav">Include Tish'a B'Av in Calculations</label>
+        <input type="checkbox" id="includeCholHaMoed" checked>
+        <label for="includeTishaBav">Include Chol HaMoed in Calculations</label>
+        <input type="checkbox" id="includeMinorFastDays" checked>
+        <label for="includeMinorFastDays">Include Minor Fast Days in Calculations</label>
+        <input type="checkbox" id="includePurim" checked>
+        <label for="includePurim">Include Purim in Calculations</label>
     </div>
 
     <div class="api-section">
@@ -261,26 +267,28 @@ th {
     </script>
 <script>
     $(document).ready(function() {
-        const currentYear = new Date().getFullYear();
-    
-        // Populate year selection dropdowns
-        for (let year = currentYear - 100; year <= currentYear + 100; year++) {
-            $('#yearSelect').append(new Option(year, year));
-            $('#startYearSelect').append(new Option(year, year));
-            $('#endYearSelect').append(new Option(year, year));
-        }
-        $('#yearSelect').val(currentYear);
-        $('#startYearSelect').val(currentYear - 5);
-        $('#endYearSelect').val(currentYear + 5);
-    
-        // Initial calculations
-        calculateDaysOff();
-        updateComparison();
-    
-        // Re-calculate when changes are made
-        $('#yearSelect, #includeTishaBav').change(calculateDaysOff);
-        $('#startYearSelect, #endYearSelect').change(updateComparison);
-    });
+    const currentYear = new Date().getFullYear();
+
+    // Populate year selection dropdowns
+    for (let year = currentYear - 100; year <= currentYear + 100; year++) {
+        $('#yearSelect').append(new Option(year, year));
+        $('#startYearSelect').append(new Option(year, year));
+        $('#endYearSelect').append(new Option(year, year));
+    }
+    $('#yearSelect').val(currentYear);
+    $('#startYearSelect').val(currentYear - 5);
+    $('#endYearSelect').val(currentYear + 5);
+
+    // Initial calculations
+    calculateDaysOff();
+    updateComparison();
+
+    // Re-calculate when changes are made
+    $('#yearSelect, #includeTishaBav, #includeCholHaMoed, #includeMinorFastDays, #includePurim').change(calculateDaysOff);
+    $('#startYearSelect, #endYearSelect').change(updateComparison);
+});
+
+
     
     var workdaysChart = null; // Hold the pie chart instance globally
     var comparisonChart = null; // Hold the line chart instance globally
@@ -288,7 +296,13 @@ th {
 
 
     
-    function fetchHolidayData(year, includeTishaBav, callback) {
+    function fetchHolidayData(year, includeTishaBav, includeCholHaMoed, includeMinorFastDays, includePurim, callback) {
+    console.log("Fetching holiday data for year:", year);
+    console.log("Include Tisha B'Av:", includeTishaBav);
+    console.log("Include Chol HaMoed:", includeCholHaMoed);
+    console.log("Include Minor Fast Days:", includeMinorFastDays);
+    console.log("Include Purim:", includePurim);
+
     const holidays = [
         'Pesach I', 'Pesach II', 'Pesach VII', 'Pesach VIII',
         'Shavuot I', 'Shavuot II',
@@ -296,26 +310,49 @@ th {
         'Shmini Atzeret', 'Simchat Torah'
     ];
 
-    // Include these specific holidays only
     const yearSpecificHolidays = [
-        'Rosh Hashana II', // Explicitly match "Rosh Hashana II"
+        'Rosh Hashana II'
     ];
 
     if (includeTishaBav) {
         yearSpecificHolidays.push("Tish’a B’Av");
     }
+    if (includePurim) {
+        yearSpecificHolidays.push("Purim");
+    }
+    if (includeCholHaMoed) {
+        yearSpecificHolidays.push("Pesach III", "Pesach IV", "Pesach V", "Pesach VI", "Sukkot III", "Sukkot IV", "Sukkot V", "Sukkot VI", "Sukkot VII");
+    }
+    if (includeMinorFastDays) {
+        yearSpecificHolidays.push("Asara B’Tevet", "Tzom Gedaliah", "Ta’anit Esther");
+    }
 
-    const apiUrl = `https://www.hebcal.com/hebcal/?v=1&cfg=json&year=${year}&maj=on&min=on&mod=on&nx=on&s=on`;
+    console.log("Holidays to include:", holidays.concat(yearSpecificHolidays));
+
+    const apiUrl = `https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}&maj=on&min=on&mod=on&nx=on&mf=on&s=on`;
     $.getJSON(apiUrl, function(data) {
         let totalDaysOff = 0;
         let totalHolidays = 0;
         let details = '';
 
         data.items.forEach(item => {
-            // Check for both fixed and dynamic year-specific holidays
-            if (holidays.includes(item.title) || yearSpecificHolidays.some(h => item.title === h) || 
-                (item.title.startsWith('Rosh Hashana ') && /\d+$/.test(item.title))) {
-                // The regex /\d+$/ checks if the title ends with a number, indicating a year
+            const includeCholHaMoedCondition = includeCholHaMoed && (
+                item.title.includes("Pesach III") || 
+                item.title.includes("Pesach IV") || 
+                item.title.includes("Pesach V") || 
+                item.title.includes("Pesach VI") || 
+                item.title.includes("Sukkot III") || 
+                item.title.includes("Sukkot IV") || 
+                item.title.includes("Sukkot V") || 
+                item.title.includes("Sukkot VI") || 
+                item.title.includes("Sukkot VII")
+            );
+
+            if (holidays.includes(item.title) || yearSpecificHolidays.includes(item.title) || 
+                (item.title.startsWith('Rosh Hashana ') && /\d+$/.test(item.title)) || includeCholHaMoedCondition) {
+                
+                console.log("Processing holiday:", item.title);
+
                 totalHolidays++;
                 const date = new Date(item.date);
                 date.setDate(date.getDate() + 1); // Adjust for sunset start
@@ -327,7 +364,6 @@ th {
                     totalDaysOff++;
                     details += `<li>${item.title} falls on ${dayName}, ${date.toLocaleDateString()} (which is a weekday). 
 <a href="#" onclick="addToGoogleCalendar('${item.title}', '${date.toISOString()}')">Add to Google Calendar</a></li>`;
-
                 }
             }
         });
@@ -341,51 +377,66 @@ th {
 
 
 
+
+
+
+
+
+
+
+
+
     
-    function updateComparison() {
-        const startYear = parseInt($('#startYearInput').val());
-        const endYear = parseInt($('#endYearInput').val());
-        const years = [];
-        const daysOff = [];
-    
-        for (let year = startYear; year <= endYear; year++) {
-            years.push(year);
-            fetchHolidayData(year, $('#includeTishaBav').is(':checked'), function(totalDaysOff) {
-                daysOff.push(totalDaysOff);
-    
-                if (years.length === daysOff.length) {
-                    if (comparisonChart) comparisonChart.destroy();
-                    var ctx = document.getElementById('comparisonChart').getContext('2d');
-                    comparisonChart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: years,
-                            datasets: [{
-                                label: 'Workday Holidays',
-                                data: daysOff,
-                                fill: false,
-                                borderColor: '#4CAF50',
-                                tension: 0.1
-                            }]
+function updateComparison() {
+    const startYear = parseInt($('#startYearInput').val());
+    const endYear = parseInt($('#endYearInput').val());
+    const includeTishaBav = $('#includeTishaBav').is(':checked');
+    const includeCholHaMoed = $('#includeCholHaMoed').is(':checked');
+    const includeMinorFastDays = $('#includeMinorFastDays').is(':checked');
+    const includePurim = $('#includePurim').is(':checked');
+    const years = [];
+    const daysOff = [];
+
+    for (let year = startYear; year <= endYear; year++) {
+        years.push(year);
+        fetchHolidayData(year, includeTishaBav, includeCholHaMoed, includeMinorFastDays, includePurim, function(totalDaysOff) {
+            daysOff.push(totalDaysOff);
+
+            if (years.length === daysOff.length) {
+                if (comparisonChart) comparisonChart.destroy();
+                var ctx = document.getElementById('comparisonChart').getContext('2d');
+                comparisonChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: years,
+                        datasets: [{
+                            label: 'Workday Holidays',
+                            data: daysOff,
+                            fill: false,
+                            borderColor: '#4CAF50',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
                         },
-                        options: {
-                            scales: {
-                                y: {
-                                    beginAtZero: true
-                                }
-                            },
-                            responsive: true,
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                }
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
                             }
                         }
-                    });
-                }
-            });
-        }
+                    }
+                });
+            }
+        });
     }
+}
+
+
 
     
     
@@ -456,7 +507,7 @@ th {
             $('#fetchParashat').click(function() {
                 console.log("Fetching Parashat");
                 $.ajax({
-                    url: 'https://www.hebcal.com/hebcal/?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&s=on',
+                    url: 'https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}&maj=on&min=on&mod=on&nx=on&mf=on&s=on',
                     type: 'GET',
                     success: function(data) {
                         console.log("Data fetched for Parashat", data);
@@ -495,7 +546,7 @@ th {
             $('#fetchHolidays').click(function() {
     console.log("Fetching holidays");
     $.ajax({
-        url: 'https://www.hebcal.com/hebcal/?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&s=on',
+        url: 'https://www.hebcal.com/hebcal?v=1&cfg=json&year=${year}&maj=on&min=on&mod=on&nx=on&mf=on&s=on',
         type: 'GET',
         success: function(data) {
             console.log("Data fetched", data);
@@ -646,9 +697,11 @@ function calculateDaysOff() {
     const currentYear = new Date().getFullYear();
     const selectedYear = $('#yearSelect').val();
     const includeTishaBav = $('#includeTishaBav').is(':checked');
+    const includeCholHaMoed = $('#includeCholHaMoed').is(':checked');
+    const includeMinorFastDays = $('#includeMinorFastDays').is(':checked');
+    const includePurim = $('#includePurim').is(':checked');
 
-    fetchHolidayData(selectedYear, includeTishaBav, function(totalDaysOff, totalHolidays, holidayDetails) {
-        // Determine if the selected year is in the past
+    fetchHolidayData(selectedYear, includeTishaBav, includeCholHaMoed, includeMinorFastDays, includePurim, function(totalDaysOff, totalHolidays, holidayDetails) {
         const isPast = selectedYear < currentYear;
         const verbTense = isPast ? "needed" : "need";
 
@@ -676,10 +729,13 @@ function calculateDaysOff() {
             }
         });
 
-        // Call displayHolidayCalendar after results are populated
         displayHolidayCalendar();
     });
 }
+
+
+
+
 
 function displayHolidayCalendar() {
     console.log("Starting to display holiday calendar");
