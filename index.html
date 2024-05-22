@@ -74,19 +74,20 @@ th {
 #holidayCalendar {
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-around;
     gap: 10px;
     margin-top: 20px;
-    display: none; /* Initially hidden */
 }
 .calendar-month {
-    flex: 1 1 calc(33.33% - 20px); /* 3 months per row */
+    flex: 1 1 45%;
+    max-width: 45%;
     border: 1px solid #ddd;
     padding: 10px;
     border-radius: 8px;
     background-color: white;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     overflow: hidden;
-    min-height: 400px;
+    min-height: 500px; /* Ensure enough height for month */
     margin-bottom: 20px;
 }
 .calendar-days {
@@ -116,9 +117,10 @@ th {
     margin: 5px 0;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1024px) {
     .calendar-month {
-        flex: 1 1 calc(50% - 20px); /* 2 months per row */
+        flex: 1 1 100%;
+        max-width: 100%;
         min-height: 450px;
     }
 }
@@ -129,7 +131,6 @@ th {
         font-size: 0.8em;
     }
     .calendar-month {
-        flex: 1 1 calc(100% - 20px); /* 1 month per row */
         padding: 10px;
         min-height: 400px;
     }
@@ -145,6 +146,10 @@ th {
         min-height: 350px;
     }
 }
+
+
+
+
 
 
     </style>
@@ -179,7 +184,7 @@ th {
 
     <div class="api-section">
         <h2>Calendar of Weekday Holidays</h2>
-        <button id="toggleCalendar">Show Calendar</button>
+        <button id="toggleCalendar">Hide Calendar</button>
         <div id="holidayCalendar"></div>
     </div>
 
