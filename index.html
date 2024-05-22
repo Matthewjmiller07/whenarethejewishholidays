@@ -6,15 +6,60 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew&display=swap" rel="stylesheet">
     <title>Jewish APIs Demo</title>
     <style>
-        body {
+      body {
     font-family: 'Noto Sans Hebrew', sans-serif;
-    margin: 20px;
+    margin: 0;
     background-color: #f4f4f4;
 }
-h1, h2 {
-    color: #333;
+
+header {
+    background-color: white;
+    border-bottom: 2px solid #ddd;
     text-align: center;
+    position: sticky;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+header h1 {
+    margin: 0;
+    padding: 20px 0; /* Padding to ensure spacing around the title */
+}
+
+.floating-box {
+    background-color: white;
+    border-bottom: 2px solid #ddd;
+    text-align: center;
+    position: sticky;
+    width: 100%;
+    top: 80px; /* Adjust this to position below the header */
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+}
+
+.floating-box label {
+    display: flex;
+    align-items: center;
+    margin-right: 10px; /* Add some space between checkbox and label */
+}
+
+.floating-box input[type="checkbox"] {
+    margin-right: 10px; /* Add space between checkbox and label text */
+    vertical-align: middle; /* Align checkbox with text */
+}
+
+main {
+    margin-top: 160px; /* Adjust this to create space for the fixed header and floating box */
+    padding: 20px;
+}
+
 .api-section, .container {
     background-color: white;
     border: 2px solid #ddd;
@@ -24,6 +69,7 @@ h1, h2 {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     overflow: hidden;
 }
+
 button, select, input[type="checkbox"] {
     background-color: #4CAF50;
     color: white;
@@ -37,40 +83,46 @@ button, select, input[type="checkbox"] {
     cursor: pointer;
     border-radius: 4px;
 }
+
 button:hover {
     background-color: #45a049;
 }
+
 p {
     font-size: 14px;
     color: #555;
 }
+
 table {
     width: 100%;
     border-collapse: collapse;
 }
+
 th, td {
     padding: 8px;
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
+
 th {
     background-color: #f8f8f8;
 }
+
 .past-holiday {
     color: #888; /* Grey out past holidays */
 }
+
 .upcoming-holiday {
     color: #4CAF50; /* Highlight upcoming holidays */
 }
-.center {
-    text-align: center;
-}
+
 #workdaysChart {
     max-width: 300px;
     max-height: 300px;
     width: 100%;
     height: auto;
 }
+
 #holidayCalendar {
     display: flex;
     flex-wrap: wrap;
@@ -78,6 +130,7 @@ th {
     gap: 10px;
     margin-top: 20px;
 }
+
 .calendar-month {
     flex: 1 1 45%;
     max-width: 45%;
@@ -90,27 +143,33 @@ th {
     min-height: 500px; /* Ensure enough height for month */
     margin-bottom: 20px;
 }
+
 .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 2px;
 }
+
 .calendar-day, .calendar-day-header {
     border: 1px solid #ddd;
     padding: 10px;
     text-align: center;
     font-size: 1em;
 }
+
 .calendar-day.empty {
     background-color: #f4f4f4;
 }
+
 .calendar-day.holiday {
     background-color: #ffcccc;
 }
+
 .calendar-day-header {
     background-color: #f4f4f4;
     font-weight: bold;
 }
+
 .calendar-month h3 {
     text-align: center;
     font-size: 1.2em;
@@ -126,13 +185,29 @@ th {
 }
 
 @media (max-width: 768px) {
+    .floating-box {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px 20px;
+    }
+
     .calendar-day, .calendar-day-header {
         padding: 5px;
         font-size: 0.8em;
     }
+
     .calendar-month {
         padding: 10px;
         min-height: 400px;
+    }
+
+    .floating-box label {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .floating-box input[type="checkbox"] {
+        margin-right: 10px;
     }
 }
 
@@ -141,11 +216,30 @@ th {
         padding: 5px;
         font-size: 0.7em;
     }
+
     .calendar-month {
         padding: 10px;
         min-height: 350px;
     }
+
+    .floating-box label {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .floating-box input[type="checkbox"] {
+        margin-right: 10px;
+    }
 }
+
+
+
+
+
+
+
 
 
 
@@ -169,19 +263,19 @@ th {
      crossorigin="anonymous"></script>
 </head>
 <body>
-    <h1>When Are the Jewish Holidays?</h1>
-    
-    <div class="center">
-        <input type="checkbox" id="includeTishaBav" checked>
-        <label for="includeTishaBav">Include Tish'a B'Av in Calculations</label>
-        <input type="checkbox" id="includeCholHaMoed" checked>
-        <label for="includeTishaBav">Include Chol HaMoed in Calculations</label>
-        <input type="checkbox" id="includeMinorFastDays" checked>
-        <label for="includeMinorFastDays">Include Minor Fast Days in Calculations</label>
-        <input type="checkbox" id="includePurim" checked>
-        <label for="includePurim">Include Purim in Calculations</label>
-    </div>
-
+    <header>
+        <h1>When Are the Jewish Holidays?</h1>
+        <div class="floating-box">
+            <input type="checkbox" id="includeTishaBav" checked>
+            <label for="includeTishaBav">Tish'a B'Av</label>
+            <input type="checkbox" id="includeCholHaMoed" checked>
+            <label for="includeCholHaMoed">Chol HaMoed</label>
+            <input type="checkbox" id="includeMinorFastDays" checked>
+            <label for="includeMinorFastDays">Minor Fast Days</label>
+            <input type="checkbox" id="includePurim" checked>
+            <label for="includePurim">Purim</label>
+        </div>
+    </header>
     <div class="api-section">
         <h2>Calculate Work Days Off for Jewish Holidays</h2>
         <label for="yearSelect">Select Year:</label>
