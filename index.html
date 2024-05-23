@@ -6,6 +6,36 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew&display=swap" rel="stylesheet">
     <title>Jewish APIs Demo</title>
     <style>
+
+        /* Add specific color classes for each holiday type */
+.checkbox-tishabav {
+    background-color: rgba(255, 99, 132, 0.2);
+    border: 1px solid rgba(255, 99, 132, 1);
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.checkbox-cholhamoed {
+    background-color: rgba(54, 162, 235, 0.2);
+    border: 1px solid rgba(54, 162, 235, 1);
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.checkbox-minorfastdays {
+    background-color: rgba(255, 206, 86, 0.2);
+    border: 1px solid rgba(255, 206, 86, 1);
+    border-radius: 4px;
+    padding: 5px;
+}
+
+.checkbox-purim {
+    background-color: rgba(75, 192, 192, 0.2);
+    border: 1px solid rgba(75, 192, 192, 1);
+    border-radius: 4px;
+    padding: 5px;
+}
+
       
       .tisha-bav {
     background-color: rgba(255, 99, 132, 0.2);
@@ -75,6 +105,7 @@ header h1 {
     margin-right: 10px; /* Add space between checkbox and label text */
     vertical-align: middle; /* Align checkbox with text */
 }
+
 
 main {
     margin-top: 160px; /* Adjust this to create space for the fixed header and floating box */
@@ -305,14 +336,22 @@ th {
     <header>
         <h1>When Are the Jewish Holidays?</h1>
         <div class="floating-box">
-            <input type="checkbox" id="includeTishaBav" checked>
-            <label for="includeTishaBav">Tish'a B'Av</label>
-            <input type="checkbox" id="includeCholHaMoed" checked>
-            <label for="includeCholHaMoed">Chol HaMoed</label>
-            <input type="checkbox" id="includeMinorFastDays" checked>
-            <label for="includeMinorFastDays">Minor Fast Days</label>
-            <input type="checkbox" id="includePurim" checked>
-            <label for="includePurim">Purim</label>
+            <label for="includeTishaBav" class="checkbox-tishabav">
+                <input type="checkbox" id="includeTishaBav">
+                Tish'a B'Av
+            </label>
+            <label for="includeCholHaMoed" class="checkbox-cholhamoed">
+                <input type="checkbox" id="includeCholHaMoed">
+                Chol HaMoed
+            </label>
+            <label for="includeMinorFastDays" class="checkbox-minorfastdays">
+                <input type="checkbox" id="includeMinorFastDays">
+                Minor Fast Days
+            </label>
+            <label for="includePurim" class="checkbox-purim">
+                <input type="checkbox" id="includePurim">
+                Purim
+            </label>
         </div>
     </header>
     <div class="api-section">
