@@ -6,6 +6,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew&display=swap" rel="stylesheet">
     <title>Jewish APIs Demo</title>
     <style>
+      
+      .tisha-bav {
+    background-color: rgba(255, 99, 132, 0.2);
+    border: 1px solid rgba(255, 99, 132, 1);
+}
+
+.chol-hamoed {
+    background-color: rgba(54, 162, 235, 0.2);
+    border: 1px solid rgba(54, 162, 235, 1);
+}
+
+.minor-fast-days {
+    background-color: rgba(75, 192, 192, 0.2);
+    border: 1px solid rgba(75, 192, 192, 1);
+}
+
+.purim {
+    background-color: rgba(153, 102, 255, 0.2);
+    border: 1px solid rgba(153, 102, 255, 1);
+}
+      
       body {
     font-family: 'Noto Sans Hebrew', sans-serif;
     margin: 0;
@@ -222,17 +243,35 @@ th {
         min-height: 350px;
     }
 
+    .floating-box {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
     .floating-box label {
-        width: 100%;
         display: flex;
         align-items: center;
+        width: 100%;
         margin-bottom: 10px;
     }
 
     .floating-box input[type="checkbox"] {
         margin-right: 10px;
     }
+
+    #holidayCalendar {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .calendar-month {
+        width: 100%;
+        max-width: 100%;
+        min-height: auto; /* Adjust the min-height for smaller screens */
+    }
 }
+
+
 
 
 
@@ -633,7 +672,7 @@ th {
         yearSpecificHolidays.push("Purim");
     }
     if (includeCholHaMoed) {
-        yearSpecificHolidays.push("Pesach III", "Pesach IV", "Pesach V", "Pesach VI", "Sukkot III", "Sukkot IV", "Sukkot V", "Sukkot VI", "Sukkot VII");
+        yearSpecificHolidays.push("Pesach III (CH’’M)", "Pesach IV (CH’’M)", "Pesach V (CH’’M)", "Pesach VI (CH’’M)", "Sukkot III (CH’’M)", "Sukkot IV (CH’’M)", "Sukkot V (CH’’M)", "Sukkot VI (CH’’M)", "Sukkot VII (Hoshana Raba)");
     }
     if (includeMinorFastDays) {
         yearSpecificHolidays.push("Asara B’Tevet", "Tzom Gedaliah", "Ta’anit Esther");
@@ -672,9 +711,20 @@ th {
                 const weekdayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
                 const dayName = weekdayNames[dayOfWeek];
 
+                let holidayClass = '';
+                if (item.title === "Tish’a B’Av" && includeTishaBav) {
+                    holidayClass = 'tisha-bav';
+                } else if (item.title === "Purim" && includePurim) {
+                    holidayClass = 'purim';
+                } else if (["Asara B’Tevet", "Tzom Gedaliah", "Ta’anit Esther"].includes(item.title) && includeMinorFastDays) {
+                    holidayClass = 'minor-fast-days';
+                } else if (["Pesach III (CH’’M)", "Pesach IV (CH’’M)", "Pesach V (CH’’M)", "Pesach VI (CH’’M)", "Sukkot III (CH’’M)", "Sukkot IV (CH’’M)", "Sukkot V (CH’’M)", "Sukkot VI (CH’’M)", "Sukkot VII (Hoshana Raba)"].includes(item.title) && includeCholHaMoed) {
+                    holidayClass = 'chol-hamoed';
+                }
+
                 if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Monday to Friday
                     totalDaysOff++;
-                    details += `<li>${item.title} falls on ${dayName}, ${date.toLocaleDateString()} (which is a weekday). 
+                    details += `<li class="${holidayClass}">${item.title} falls on ${dayName}, ${date.toLocaleDateString()} (which is a weekday). 
 <a href="#" onclick="addToGoogleCalendar('${item.title}', '${date.toISOString()}')">Add to Google Calendar</a></li>`;
                 }
             }
@@ -686,6 +736,8 @@ th {
         callback(0, 0, ''); // Return 0 days off if failed
     });
 }
+
+
 
 
 
