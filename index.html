@@ -337,6 +337,25 @@ th {
     cursor: pointer;
     float: right;
 }
+
+#holidayInfoSection {
+    /* Add any specific styles you want for this section */
+}
+
+#holidayDetails {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px; /* Adjust spacing as needed */
+}
+
+.holiday-info-card {
+    background-color: white;
+    border: 1px solid #ddd;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex: 1 1 300px; /* Adjust width as needed */
+}
     </style>
     
     
@@ -363,7 +382,6 @@ th {
     <div class="floating-box" id="filterBox">
         <button id="toggleFiltersButton">Filters</button>
         <div id="filterContent">  
-            <span id="closeFilterBox">X</span>
             <label for="includeTishaBav" class="checkbox-tishabav">
                 <input type="checkbox" id="includeTishaBav">
                 Tish'a B'Av
@@ -398,6 +416,11 @@ th {
         <h2>Calendar of Weekday Holidays</h2>
         <button id="toggleCalendar">Hide Calendar</button>
         <div id="holidayCalendar"></div>
+    </div>
+
+    <div class="api-section" id="holidayInfoSection">
+        <h2>About the Holidays</h2>
+        <div id="holidayDetails"></div>
     </div>
 
     <div class="api-section">
