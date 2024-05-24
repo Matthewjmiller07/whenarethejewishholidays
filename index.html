@@ -6,137 +6,110 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew&display=swap" rel="stylesheet">
     <title>Jewish APIs Demo</title>
     <style>
-
-        /* Add specific color classes for each holiday type */
-.checkbox-tishabav {
-    background-color: rgba(255, 99, 132, 0.2);
-    border: 1px solid rgba(255, 99, 132, 1);
-    border-radius: 4px;
-    padding: 5px;
+/* Specific Holiday Colors */
+.checkbox-tishabav, .calendar-day.holiday.tisha-bav, .tisha-bav {
+  background-color: rgba(255, 99, 132, 0.2); 
+  border: 1px solid rgba(255, 99, 132, 1);
+}
+.checkbox-cholhamoed, .calendar-day.holiday.chol-hamoed, .chol-hamoed {
+  background-color: rgba(54, 162, 235, 0.2);
+  border: 1px solid rgba(54, 162, 235, 1);
+}
+.checkbox-minorfastdays, .calendar-day.holiday.minor-fast-days, .minor-fast-days {
+  background-color: rgba(255, 206, 86, 0.2); 
+  border: 1px solid rgba(255, 206, 86, 1);
+}
+.checkbox-purim, .calendar-day.holiday.purim, .purim {
+  background-color: rgba(75, 192, 192, 0.2);
+  border: 1px solid rgba(75, 192, 192, 1);
 }
 
-.checkbox-cholhamoed {
-    background-color: rgba(54, 162, 235, 0.2);
-    border: 1px solid rgba(54, 162, 235, 1);
-    border-radius: 4px;
-    padding: 5px;
-}
-
-.checkbox-minorfastdays {
-    background-color: rgba(255, 206, 86, 0.2); /* Light yellow */
-    border: 1px solid rgba(255, 206, 86, 1); /* Darker yellow border */
-    border-radius: 4px;
-    padding: 5px;
-}
-
-.checkbox-purim {
-    background-color: rgba(75, 192, 192, 0.2);
-    border: 1px solid rgba(75, 192, 192, 1);
-    border-radius: 4px;
-    padding: 5px;
-}
-      
-      .tisha-bav {
-    background-color: rgba(255, 99, 132, 0.2);
-    border: 1px solid rgba(255, 99, 132, 1);
-}
-
-.chol-hamoed {
-    background-color: rgba(54, 162, 235, 0.2);
-    border: 1px solid rgba(54, 162, 235, 1);
-}
-
-.minor-fast-days {
-    background-color: rgba(255, 206, 86, 0.2); /* Light yellow */
-    border: 1px solid rgba(255, 206, 86, 1); /* Darker yellow border */
-}
-
-.purim {
-    background-color: rgba(75, 192, 192, 0.2);
-    border: 1px solid rgba(75, 192, 192, 1);
-}
-      
-      body {
-    font-family: 'Noto Sans Hebrew', sans-serif;
-    margin: 0;
-    background-color: #f4f4f4;
+/* General Styles */
+body {
+  font-family: 'Noto Sans Hebrew', sans-serif;
+  margin: 0;
+  background-color: #f4f4f4;
 }
 
 header {
-    background-color: white;
-    border-bottom: 2px solid #ddd;
-    text-align: center;
-    position: sticky;
-    width: 100%;
-    top: 0;
-    z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background-color: white;
+  border-bottom: 2px solid #ddd;
+  text-align: center;
+  position: sticky;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 header h1 {
-    margin: 0;
-    padding: 20px 0; /* Padding to ensure spacing around the title */
+  margin: 0;
+  padding: 20px 0; 
 }
 
+/* Filter Section */
 .floating-box {
-    background-color: white;
-    border-bottom: 2px solid #ddd;
-    text-align: center;
-    position: sticky;
-    width: 100%;
-    top: 80px; /* Adjust this to position below the header */
-    z-index: 1000;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    padding: 10px;
+  background-color: white;
+  border-bottom: 2px solid #ddd;
+  position: sticky;
+  width: 100%;
+  top: 80px;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 5px;  /* Reduced gap between filter items */
+  padding: 10px; 
 }
 
 .floating-box label {
-    display: flex;
-    align-items: center;
-    margin-right: 10px; /* Add some space between checkbox and label */
+  display: flex;
+  align-items: center;
+  padding: 8px 5px; /* Reduced padding */
+  gap: 5px;       /* Reduced gap between checkbox and label */
 }
 
 .floating-box input[type="checkbox"] {
-    margin-right: 10px; /* Add space between checkbox and label text */
-    vertical-align: middle; /* Align checkbox with text */
+  margin-right: 10px;
+  vertical-align: middle;
+  margin: 0 5px 0 0;
 }
 
-
+/* Main Content Area */
 main {
-    margin-top: 160px; /* Adjust this to create space for the fixed header and floating box */
-    padding: 20px;
+  margin-top: 160px;
+  padding: 20px;
 }
 
+/* Sections (API and Container) */
 .api-section, .container {
-    background-color: white;
-    border: 2px solid #ddd;
-    padding: 20px;
-    margin-top: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    overflow: hidden;
+  background-color: white;
+  border: 2px solid #ddd;
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
 }
 
+/* Buttons, Selects, and Checkboxes */
 button, select, input[type="checkbox"] {
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-    border-radius: 4px;
+  background-color: #4CAF50; 
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
 button:hover {
-    background-color: #45a049;
+  background-color: #45a049; 
 }
 
 p {
@@ -167,135 +140,143 @@ th {
     color: #4CAF50; /* Highlight upcoming holidays */
 }
 
+/* Workdays Chart */
 #workdaysChart {
-    max-width: 300px;
-    max-height: 300px;
-    width: 100%;
-    height: auto;
+  max-width: 300px;
+  max-height: 300px;
+  width: 100%;
+  height: auto;
 }
 
+/* Holiday Calendar */
 #holidayCalendar {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    gap: 10px;
-    margin-top: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  gap: 10px;
+  margin-top: 20px;
 }
 
 .calendar-month {
-    flex: 1 1 45%;
-    max-width: 45%;
-    border: 1px solid #ddd;
-    padding: 10px;
-    border-radius: 8px;
-    background-color: white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    overflow: hidden;
-    min-height: 500px; /* Ensure enough height for month */
-    margin-bottom: 20px;
+  flex: 1 1 45%;
+  max-width: 45%;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
+  min-height: 500px; 
+  margin-bottom: 20px;
 }
 
 .calendar-days {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 2px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
 }
 
 .calendar-day, .calendar-day-header {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: center;
-    font-size: 1em;
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+  font-size: 1em;
 }
 
 .calendar-day.empty {
-    background-color: #f4f4f4;
+  background-color: #f4f4f4;
 }
 
 .calendar-day-header {
-    background-color: #f4f4f4;
-    font-weight: bold;
+  background-color: #f4f4f4;
+  font-weight: bold;
 }
 
 .calendar-month h3 {
-    text-align: center;
-    font-size: 1.2em;
-    margin: 5px 0;
+  text-align: center;
+  font-size: 1.2em;
+  margin: 5px 0;
 }
 
+/* Media Queries for Responsiveness */
 @media (max-width: 1024px) {
-    .calendar-month {
-        flex: 1 1 100%;
-        max-width: 100%;
-        min-height: 450px;
-    }
+  /* Styles for larger tablets */
+  .calendar-month {
+    flex: 1 1 100%; /* Take up full width */
+    max-width: 100%;
+    min-height: 450px;
+  }
 }
 
 @media (max-width: 768px) {
-    .floating-box {
-        flex-direction: column;
-        align-items: flex-start;
-        padding: 10px 20px;
-    }
+  /* Styles for smaller tablets and larger phones */
+  .floating-box {
+    position: static; 
+    width: auto;      
+    margin: 0 -20px;   
+    padding: 10px 20px; 
+  }
 
-    .calendar-day, .calendar-day-header {
-        padding: 5px;
-        font-size: 0.8em;
-    }
+  .floating-box label {
+    font-size: 14px;
+    padding: 5px;   
+  }
 
-    .calendar-month {
-        padding: 10px;
-        min-height: 400px;
-    }
+  .calendar-day, .calendar-day-header {
+    padding: 5px;
+    font-size: 0.8em;
+  }
 
-    .floating-box label {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-
-    .floating-box input[type="checkbox"] {
-        margin-right: 10px;
-    }
+  .calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(30px, 1fr)); /* Minimum 30px, can grow */
+    gap: 2px;
 }
 
-@media (max-width: 480px) {
-    .calendar-day, .calendar-day-header {
-        padding: 5px;
-        font-size: 0.7em;
-    }
-
-    .calendar-month {
-        padding: 10px;
-        min-height: 350px;
-    }
-
-    .floating-box {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .floating-box label {
-        display: flex;
-        align-items: center;
-        width: 100%;
-        margin-bottom: 10px;
-    }
-
-    .floating-box input[type="checkbox"] {
-        margin-right: 10px;
-    }
-
-    #holidayCalendar {
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .calendar-month {
-        width: 100%;
-        max-width: 100%;
-        min-height: auto; /* Adjust the min-height for smaller screens */
-    }
+.calendar-month {
+  overflow: auto; /* Add horizontal scrollbar if content overflows */
 }
+
+.calendar-day {
+  box-sizing: border-box; /* Include padding and border in element's total width */
+}
+
+  .calendar-month {
+    padding: 10px;
+    min-height: 400px;
+  }
+}
+
+@media (max-width: 480px) { 
+  /* Styles for smaller phones */
+  .calendar-day, .calendar-day-header {
+    padding: 5px; 
+    font-size: 0.7em;
+  }
+  
+  .calendar-month {
+    padding: 10px;
+    min-height: 350px; 
+  }
+  
+  #holidayCalendar {
+    flex-direction: column; 
+    align-items: center;
+  }
+  
+  .calendar-month {
+    width: 100%;
+    max-width: 100%;
+    min-height: auto; 
+  }
+}
+
+/* Style for unfiltered holidays */
+.calendar-day.holiday { 
+  background-color: #f4f4f4; 
+  color: #888; 
+}
+    
 
     </style>
     
