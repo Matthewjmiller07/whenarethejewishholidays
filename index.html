@@ -276,8 +276,67 @@ th {
   background-color: #f4f4f4; 
   color: #888; 
 }
-    
 
+
+#toggleFiltersButton {
+    display: block;
+    width: 100%;
+    padding: 8px;
+    border: none;
+    border-radius: 4px;
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    text-align: center;
+    margin-bottom: 10px; /* Add space below button */
+}
+
+#filterBox {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    padding: 10px; 
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    min-width: 150px;
+    max-width: 150px;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    /* Remove display: none here */ 
+}
+
+#filterBox.open {
+        top: 50px; /* Ensure it's visible below the header on mobile */
+    }@
+
+#filterBox h2 {
+    margin-top: 0; /* Remove top margin from the heading */
+}
+
+#filterBox label {
+    display: block; /* Display labels as blocks for better spacing */
+    margin-bottom: 10px; /* Add margin between labels */
+}
+
+#filterBox input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+#filterContent {
+    display: none; /* Initially hide filter content */
+}
+
+#filterBox.open #filterContent {
+    display: block; /* Show filter content when box is open */
+}
+#closeFilterBox {
+    cursor: pointer;
+    float: right;
+}
     </style>
     
     
@@ -293,11 +352,18 @@ th {
        <!-- Google Ads -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9554355274659744"
      crossorigin="anonymous"></script>
+
+     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
 </head>
 <body>
     <header>
         <h1>When Are the Jewish Holidays?</h1>
-        <div class="floating-box">
+    </header>
+    <div class="floating-box" id="filterBox">
+        <button id="toggleFiltersButton">Filters</button>
+        <div id="filterContent">  
+            <span id="closeFilterBox">X</span>
             <label for="includeTishaBav" class="checkbox-tishabav">
                 <input type="checkbox" id="includeTishaBav">
                 Tish'a B'Av
@@ -315,7 +381,10 @@ th {
                 Purim
             </label>
         </div>
-    </header>
+    </div>
+    
+    
+
     <div class="api-section">
         <h2>Calculate Work Days Off for Jewish Holidays</h2>
         <label for="yearSelect">Select Year:</label>
@@ -735,6 +804,16 @@ th {
     }).fail(function() {
         console.error('Failed to fetch holiday data for ' + year);
         callback(0, 0, ''); // Return 0 days off if failed
+    });
+
+    // Toggle filter box visibility
+    $('#toggleFiltersButton').click(function() {
+        $('#filterContent').toggle(); // Toggle only the filter content
+        $(this).text($('#filterContent').is(':visible') ? 'Close' : 'Filters'); 
+    });
+
+    $('#closeFilterBox').click(function() {
+        $('#filterBox').hide(); // Hide the entire filter box
     });
 }
 
@@ -1184,7 +1263,7 @@ $('#toggleCalendar').click(function() {
 
 
 
-
+            $("#filterBox").draggable(); // Make the filter box draggable
 
 
 
