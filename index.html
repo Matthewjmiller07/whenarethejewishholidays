@@ -23,8 +23,8 @@
 }
 
 .checkbox-minorfastdays {
-    background-color: rgba(255, 206, 86, 0.2);
-    border: 1px solid rgba(255, 206, 86, 1);
+    background-color: rgba(255, 206, 86, 0.2); /* Light yellow */
+    border: 1px solid rgba(255, 206, 86, 1); /* Darker yellow border */
     border-radius: 4px;
     padding: 5px;
 }
@@ -35,7 +35,6 @@
     border-radius: 4px;
     padding: 5px;
 }
-
       
       .tisha-bav {
     background-color: rgba(255, 99, 132, 0.2);
@@ -48,13 +47,13 @@
 }
 
 .minor-fast-days {
-    background-color: rgba(75, 192, 192, 0.2);
-    border: 1px solid rgba(75, 192, 192, 1);
+    background-color: rgba(255, 206, 86, 0.2); /* Light yellow */
+    border: 1px solid rgba(255, 206, 86, 1); /* Darker yellow border */
 }
 
 .purim {
-    background-color: rgba(153, 102, 255, 0.2);
-    border: 1px solid rgba(153, 102, 255, 1);
+    background-color: rgba(75, 192, 192, 0.2);
+    border: 1px solid rgba(75, 192, 192, 1);
 }
       
       body {
@@ -213,10 +212,6 @@ th {
     background-color: #f4f4f4;
 }
 
-.calendar-day.holiday {
-    background-color: #ffcccc;
-}
-
 .calendar-day-header {
     background-color: #f4f4f4;
     font-weight: bold;
@@ -301,20 +296,6 @@ th {
         min-height: auto; /* Adjust the min-height for smaller screens */
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     </style>
     
@@ -1150,13 +1131,14 @@ function displayHolidayCalendar() {
     results.each(function() {
         const holidayText = $(this).text();
         console.log("Processing result item:", holidayText);
-        
+
         const match = holidayText.match(/(.+?)\sfalls\son\s(\w+),\s(\d+\/\d+\/\d+)\s\(which is a weekday\)/);
         if (match) {
             const holiday = {
                 title: match[1],
                 day: match[2],
-                date: new Date(match[3])
+                date: new Date(match[3]),
+                class: $(this).attr('class') // Get the class from the list item
             };
             holidays.push(holiday);
             console.log("Parsed holiday:", holiday);
@@ -1198,7 +1180,7 @@ function displayHolidayCalendar() {
             const dayDiv = $('<div class="calendar-day"></div>').text(day);
             if (holiday) {
                 console.log(`Found holiday on ${date.toDateString()}: ${holiday.title}`);
-                dayDiv.addClass('holiday').append(`<br>${holiday.title}`);
+                dayDiv.addClass('holiday').addClass(holiday.class).append(`<br>${holiday.title}`); // Add the class from the list item
             }
             daysGrid.append(dayDiv);
         }
@@ -1207,6 +1189,7 @@ function displayHolidayCalendar() {
         calendar.append(monthDiv);
     }
 }
+
 
 // Call this function after the results section is populated
 displayHolidayCalendar();
