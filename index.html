@@ -6,357 +6,357 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew&display=swap" rel="stylesheet">
     <title>Jewish APIs Demo</title>
     <style>
-/* Specific Holiday Colors */
-.checkbox-tishabav, .calendar-day.holiday.tisha-bav, .tisha-bav {
-  background-color: rgba(255, 99, 132, 0.2); 
-  border: 1px solid rgba(255, 99, 132, 1);
-}
-.checkbox-cholhamoed, .calendar-day.holiday.chol-hamoed, .chol-hamoed {
-  background-color: rgba(54, 162, 235, 0.2);
-  border: 1px solid rgba(54, 162, 235, 1);
-}
-.checkbox-minorfastdays, .calendar-day.holiday.minor-fast-days, .minor-fast-days {
-  background-color: rgba(255, 206, 86, 0.2); 
-  border: 1px solid rgba(255, 206, 86, 1);
-}
-.checkbox-purim, .calendar-day.holiday.purim, .purim {
-  background-color: rgba(75, 192, 192, 0.2);
-  border: 1px solid rgba(75, 192, 192, 1);
-}
-
-/* General Styles */
-body {
-  font-family: 'Noto Sans Hebrew', sans-serif;
-  margin: 0;
-  background-color: #f4f4f4;
-}
-
-header {
-  background-color: white;
-  border-bottom: 2px solid #ddd;
-  text-align: center;
-  position: sticky;
-  width: 100%;
-  top: 0;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-header h1 {
-  margin: 0;
-  padding: 20px 0; 
-}
-
-/* Filter Section */
-.floating-box {
-  background-color: white;
-  border-bottom: 2px solid #ddd;
-  position: sticky;
-  width: 100%;
-  top: 80px;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 5px;  /* Reduced gap between filter items */
-  padding: 10px; 
-}
-
-.floating-box label {
-  display: flex;
-  align-items: center;
-  padding: 8px 5px; /* Reduced padding */
-  gap: 5px;       /* Reduced gap between checkbox and label */
-}
-
-.floating-box input[type="checkbox"] {
-  margin-right: 10px;
-  vertical-align: middle;
-  margin: 0 5px 0 0;
-}
-
-/* Main Content Area */
-main {
-  margin-top: 160px;
-  padding: 20px;
-}
-
-/* Sections (API and Container) */
-.api-section, .container {
-  background-color: white;
-  border: 2px solid #ddd;
-  padding: 20px;
-  margin-top: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  overflow: hidden;
-}
-
-/* Buttons, Selects, and Checkboxes */
-button, select, input[type="checkbox"] {
-  background-color: #4CAF50; 
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-  margin: 4px 2px;
-  cursor: pointer;
-  border-radius: 4px;
-}
-
-button:hover {
-  background-color: #45a049; 
-}
-
-p {
-    font-size: 14px;
-    color: #555;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th, td {
-    padding: 8px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-th {
-    background-color: #f8f8f8;
-}
-
-.past-holiday {
-    color: #888; /* Grey out past holidays */
-}
-
-.upcoming-holiday {
-    color: #4CAF50; /* Highlight upcoming holidays */
-}
-
-/* Workdays Chart */
-#workdaysChart {
-  max-width: 300px;
-  max-height: 300px;
-  width: 100%;
-  height: auto;
-}
-
-/* Holiday Calendar */
-#holidayCalendar {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.calendar-month {
-  flex: 1 1 45%;
-  max-width: 45%;
-  border: 1px solid #ddd;
-  padding: 10px;
-  border-radius: 8px;
-  background-color: white;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  overflow: hidden;
-  min-height: 500px; 
-  margin-bottom: 20px;
-}
-
-.calendar-days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
-}
-
-.calendar-day, .calendar-day-header {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: center;
-  font-size: 1em;
-}
-
-.calendar-day.empty {
-  background-color: #f4f4f4;
-}
-
-.calendar-day-header {
-  background-color: #f4f4f4;
-  font-weight: bold;
-}
-
-.calendar-month h3 {
-  text-align: center;
-  font-size: 1.2em;
-  margin: 5px 0;
-}
-
-/* Media Queries for Responsiveness */
-@media (max-width: 1024px) {
-  /* Styles for larger tablets */
-  .calendar-month {
-    flex: 1 1 100%; /* Take up full width */
-    max-width: 100%;
-    min-height: 450px;
-  }
-}
-
-@media (max-width: 768px) {
-  /* Styles for smaller tablets and larger phones */
-  .floating-box {
-    position: static; 
-    width: auto;      
-    margin: 0 -20px;   
-    padding: 10px 20px; 
-  }
-
-  .floating-box label {
-    font-size: 14px;
-    padding: 5px;   
-  }
-
-  .calendar-day, .calendar-day-header {
-    padding: 5px;
-    font-size: 0.8em;
-  }
-
-  .calendar-days {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(30px, 1fr)); /* Minimum 30px, can grow */
-    gap: 2px;
-}
-
-.calendar-month {
-  overflow: auto; /* Add horizontal scrollbar if content overflows */
-}
-
-.calendar-day {
-  box-sizing: border-box; /* Include padding and border in element's total width */
-}
-
-  .calendar-month {
-    padding: 10px;
-    min-height: 400px;
-  }
-}
-
-@media (max-width: 480px) { 
-  /* Styles for smaller phones */
-  .calendar-day, .calendar-day-header {
-    padding: 5px; 
-    font-size: 0.7em;
-  }
-  
-  .calendar-month {
-    padding: 10px;
-    min-height: 350px; 
-  }
-  
-  #holidayCalendar {
-    flex-direction: column; 
-    align-items: center;
-  }
-  
-  .calendar-month {
-    width: 100%;
-    max-width: 100%;
-    min-height: auto; 
-  }
-}
-
-/* Style for unfiltered holidays */
-.calendar-day.holiday { 
-  background-color: #f4f4f4; 
-  color: #888; 
-}
-
-
-#toggleFiltersButton {
-    display: block;
-    width: 100%;
-    padding: 8px;
-    border: none;
-    border-radius: 4px;
-    background-color: #4CAF50;
-    color: white;
-    cursor: pointer;
-    font-size: 16px;
-    text-align: center;
-    margin-bottom: 10px; /* Add space below button */
-}
-
-#filterBox {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    z-index: 1000;
-    padding: 10px; 
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    min-width: 150px;
-    max-width: 150px;
-    overflow: hidden;
-    transition: max-height 0.3s ease-out;
-    /* Remove display: none here */ 
-}
-
-#filterBox.open {
-        top: 50px; /* Ensure it's visible below the header on mobile */
-    }@
-
-#filterBox h2 {
-    margin-top: 0; /* Remove top margin from the heading */
-}
-
-#filterBox label {
-    display: block; /* Display labels as blocks for better spacing */
-    margin-bottom: 10px; /* Add margin between labels */
-}
-
-#filterBox input[type="checkbox"] {
-    margin-right: 5px;
-}
-
-#filterContent {
-    display: none; /* Initially hide filter content */
-}
-
-#filterBox.open #filterContent {
-    display: block; /* Show filter content when box is open */
-}
-#closeFilterBox {
-    cursor: pointer;
-    float: right;
-}
-
-#holidayInfoSection {
-    /* Add any specific styles you want for this section */
-}
-
-#holidayDetails {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px; /* Adjust spacing as needed */
-}
-
-.holiday-info-card {
-    background-color: white;
-    border: 1px solid #ddd;
-    padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    flex: 1 1 300px; /* Adjust width as needed */
-}
-    </style>
+        /* Specific Holiday Colors */
+        .checkbox-tishabav, .calendar-day.holiday.tisha-bav, .tisha-bav {
+          background-color: rgba(255, 99, 132, 0.2); 
+          border: 1px solid rgba(255, 99, 132, 1);
+        }
+        .checkbox-cholhamoed, .calendar-day.holiday.chol-hamoed, .chol-hamoed {
+          background-color: rgba(54, 162, 235, 0.2);
+          border: 1px solid rgba(54, 162, 235, 1);
+        }
+        .checkbox-minorfastdays, .calendar-day.holiday.minor-fast-days, .minor-fast-days {
+          background-color: rgba(255, 206, 86, 0.2); 
+          border: 1px solid rgba(255, 206, 86, 1);
+        }
+        .checkbox-purim, .calendar-day.holiday.purim, .purim {
+          background-color: rgba(75, 192, 192, 0.2);
+          border: 1px solid rgba(75, 192, 192, 1);
+        }
+        
+        /* General Styles */
+        body {
+          font-family: 'Noto Sans Hebrew', sans-serif;
+          margin: 0;
+          background-color: #f4f4f4;
+        }
+        
+        header {
+          background-color: white;
+          border-bottom: 2px solid #ddd;
+          text-align: center;
+          position: sticky;
+          width: 100%;
+          top: 0;
+          z-index: 1000;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+          margin: 0;
+          padding: 20px 0; 
+        }
+        
+        /* Filter Section */
+        .floating-box {
+          background-color: white;
+          border-bottom: 2px solid #ddd;
+          position: sticky;
+          width: 100%;
+          top: 80px;
+          z-index: 1000;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 5px;  /* Reduced gap between filter items */
+          padding: 10px; 
+        }
+        
+        .floating-box label {
+          display: flex;
+          align-items: center;
+          padding: 8px 5px; /* Reduced padding */
+          gap: 5px;       /* Reduced gap between checkbox and label */
+        }
+        
+        .floating-box input[type="checkbox"] {
+          margin-right: 10px;
+          vertical-align: middle;
+          margin: 0 5px 0 0;
+        }
+        
+        /* Main Content Area */
+        main {
+          margin-top: 160px;
+          padding: 20px;
+        }
+        
+        /* Sections (API and Container) */
+        .api-section, .container {
+          background-color: white;
+          border: 2px solid #ddd;
+          padding: 20px;
+          margin-top: 20px;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          overflow: hidden;
+        }
+        
+        /* Buttons, Selects, and Checkboxes */
+        button, select, input[type="checkbox"] {
+          background-color: #4CAF50; 
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 16px;
+          margin: 4px 2px;
+          cursor: pointer;
+          border-radius: 4px;
+        }
+        
+        button:hover {
+          background-color: #45a049; 
+        }
+        
+        p {
+            font-size: 14px;
+            color: #555;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f8f8f8;
+        }
+        
+        .past-holiday {
+            color: #888; /* Grey out past holidays */
+        }
+        
+        .upcoming-holiday {
+            color: #4CAF50; /* Highlight upcoming holidays */
+        }
+        
+        /* Workdays Chart */
+        #workdaysChart {
+          max-width: 300px;
+          max-height: 300px;
+          width: 100%;
+          height: auto;
+        }
+        
+        /* Holiday Calendar */
+        #holidayCalendar {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-around;
+          gap: 10px;
+          margin-top: 20px;
+        }
+        
+        .calendar-month {
+          flex: 1 1 45%;
+          max-width: 45%;
+          border: 1px solid #ddd;
+          padding: 10px;
+          border-radius: 8px;
+          background-color: white;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          overflow: hidden;
+          min-height: 500px; 
+          margin-bottom: 20px;
+        }
+        
+        .calendar-days {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          gap: 2px;
+        }
+        
+        .calendar-day, .calendar-day-header {
+          border: 1px solid #ddd;
+          padding: 10px;
+          text-align: center;
+          font-size: 1em;
+        }
+        
+        .calendar-day.empty {
+          background-color: #f4f4f4;
+        }
+        
+        .calendar-day-header {
+          background-color: #f4f4f4;
+          font-weight: bold;
+        }
+        
+        .calendar-month h3 {
+          text-align: center;
+          font-size: 1.2em;
+          margin: 5px 0;
+        }
+        
+        /* Media Queries for Responsiveness */
+        @media (max-width: 1024px) {
+          /* Styles for larger tablets */
+          .calendar-month {
+            flex: 1 1 100%; /* Take up full width */
+            max-width: 100%;
+            min-height: 450px;
+          }
+        }
+        
+        @media (max-width: 768px) {
+          /* Styles for smaller tablets and larger phones */
+          .floating-box {
+            position: static; 
+            width: auto;      
+            margin: 0 -20px;   
+            padding: 10px 20px; 
+          }
+        
+          .floating-box label {
+            font-size: 14px;
+            padding: 5px;   
+          }
+        
+          .calendar-day, .calendar-day-header {
+            padding: 5px;
+            font-size: 0.8em;
+          }
+        
+          .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(30px, 1fr)); /* Minimum 30px, can grow */
+            gap: 2px;
+        }
+        
+        .calendar-month {
+          overflow: auto; /* Add horizontal scrollbar if content overflows */
+        }
+        
+        .calendar-day {
+          box-sizing: border-box; /* Include padding and border in element's total width */
+        }
+        
+          .calendar-month {
+            padding: 10px;
+            min-height: 400px;
+          }
+        }
+        
+        @media (max-width: 480px) { 
+          /* Styles for smaller phones */
+          .calendar-day, .calendar-day-header {
+            padding: 5px; 
+            font-size: 0.7em;
+          }
+          
+          .calendar-month {
+            padding: 10px;
+            min-height: 350px; 
+          }
+          
+          #holidayCalendar {
+            flex-direction: column; 
+            align-items: center;
+          }
+          
+          .calendar-month {
+            width: 100%;
+            max-width: 100%;
+            min-height: auto; 
+          }
+        }
+        
+        /* Style for unfiltered holidays */
+        .calendar-day.holiday { 
+          background-color: #f4f4f4; 
+          color: #888; 
+        }
+        
+        
+        #toggleFiltersButton {
+            display: block;
+            width: 100%;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            margin-bottom: 10px; /* Add space below button */
+        }
+        
+        #filterBox {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 1000;
+            padding: 10px; 
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            min-width: 150px;
+            max-width: 150px;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            /* Remove display: none here */ 
+        }
+        
+        #filterBox.open {
+                top: 50px; /* Ensure it's visible below the header on mobile */
+            }@
+        
+        #filterBox h2 {
+            margin-top: 0; /* Remove top margin from the heading */
+        }
+        
+        #filterBox label {
+            display: block; /* Display labels as blocks for better spacing */
+            margin-bottom: 10px; /* Add margin between labels */
+        }
+        
+        #filterBox input[type="checkbox"] {
+            margin-right: 5px;
+        }
+        
+        #filterContent {
+            display: none; /* Initially hide filter content */
+        }
+        
+        #filterBox.open #filterContent {
+            display: block; /* Show filter content when box is open */
+        }
+        #closeFilterBox {
+            cursor: pointer;
+            float: right;
+        }
+        
+        #holidayInfoSection {
+            /* Add any specific styles you want for this section */
+        }
+        
+        #holidayDetails {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px; /* Adjust spacing as needed */
+        }
+        
+        .holiday-info-card {
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex: 1 1 300px; /* Adjust width as needed */
+        }
+            </style>
     
     
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -710,7 +710,7 @@ th {
 });
 
         });
-    $(document).ready(function() {
+        $(document).ready(function() {
     const currentYear = new Date().getFullYear();
 
     // Populate year selection dropdowns
@@ -730,17 +730,26 @@ th {
     // Re-calculate when changes are made
     $('#yearSelect, #includeTishaBav, #includeCholHaMoed, #includeMinorFastDays, #includePurim').change(calculateDaysOff);
     $('#startYearSelect, #endYearSelect').change(updateComparison);
+
+    // Initialize Draggable Functionality
+    $("#filterBox").draggable(); // Make the filter box draggable
+
+    // Toggle Filters Button Click Event
+    $('#toggleFiltersButton').click(function() {
+        $('#filterContent').toggle(); // Toggle only the filter content
+        $(this).text($('#filterContent').is(':visible') ? 'Close' : 'Filters');
+    });
+
+    // Optional: Close Filter Box Button
+    $('#closeFilterBox').click(function() {
+        $('#filterBox').hide(); // Hide the entire filter box
+    });
 });
 
+var workdaysChart = null; // Hold the pie chart instance globally
+var comparisonChart = null; // Hold the line chart instance globally
 
-    
-    var workdaysChart = null; // Hold the pie chart instance globally
-    var comparisonChart = null; // Hold the line chart instance globally
-    
-
-
-    
-    function fetchHolidayData(year, includeTishaBav, includeCholHaMoed, includeMinorFastDays, includePurim, callback) {
+function fetchHolidayData(year, includeTishaBav, includeCholHaMoed, includeMinorFastDays, includePurim, callback) {
     console.log("Fetching holiday data for year:", year);
     console.log("Include Tisha B'Av:", includeTishaBav);
     console.log("Include Chol HaMoed:", includeCholHaMoed);
@@ -765,7 +774,10 @@ th {
         yearSpecificHolidays.push("Purim");
     }
     if (includeCholHaMoed) {
-        yearSpecificHolidays.push("Pesach III (CH’’M)", "Pesach IV (CH’’M)", "Pesach V (CH’’M)", "Pesach VI (CH’’M)", "Sukkot III (CH’’M)", "Sukkot IV (CH’’M)", "Sukkot V (CH’’M)", "Sukkot VI (CH’’M)", "Sukkot VII (Hoshana Raba)");
+        yearSpecificHolidays.push(
+            "Pesach III (CH’’M)", "Pesach IV (CH’’M)", "Pesach V (CH’’M)", "Pesach VI (CH’’M)",
+            "Sukkot III (CH’’M)", "Sukkot IV (CH’’M)", "Sukkot V (CH’’M)", "Sukkot VI (CH’’M)", "Sukkot VII (Hoshana Raba)"
+        );
     }
     if (includeMinorFastDays) {
         yearSpecificHolidays.push("Asara B’Tevet", "Tzom Gedaliah", "Ta’anit Esther");
@@ -778,6 +790,7 @@ th {
         let totalDaysOff = 0;
         let totalHolidays = 0;
         let details = '';
+        let allHolidays = []; // New array to store all holidays
 
         data.items.forEach(item => {
             const includeCholHaMoedCondition = includeCholHaMoed && (
@@ -811,32 +824,33 @@ th {
                     holidayClass = 'purim';
                 } else if (["Asara B’Tevet", "Tzom Gedaliah", "Ta’anit Esther"].includes(item.title) && includeMinorFastDays) {
                     holidayClass = 'minor-fast-days';
-                } else if (["Pesach III (CH’’M)", "Pesach IV (CH’’M)", "Pesach V (CH’’M)", "Pesach VI (CH’’M)", "Sukkot III (CH’’M)", "Sukkot IV (CH’’M)", "Sukkot V (CH’’M)", "Sukkot VI (CH’’M)", "Sukkot VII (Hoshana Raba)"].includes(item.title) && includeCholHaMoed) {
+                } else if ([
+                    "Pesach III (CH’’M)", "Pesach IV (CH’’M)", "Pesach V (CH’’M)", "Pesach VI (CH’’M)",
+                    "Sukkot III (CH’’M)", "Sukkot IV (CH’’M)", "Sukkot V (CH’’M)", "Sukkot VI (CH’’M)", "Sukkot VII (Hoshana Raba)"
+                ].includes(item.title) && includeCholHaMoed) {
                     holidayClass = 'chol-hamoed';
                 }
+
+                // Collect the holiday info into allHolidays array
+                allHolidays.push({
+                    title: item.title,
+                    date: date,
+                    dayName: dayName,
+                    class: holidayClass
+                });
 
                 if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Monday to Friday
                     totalDaysOff++;
                     details += `<li class="${holidayClass}">${item.title} falls on ${dayName}, ${date.toLocaleDateString()} (which is a weekday). 
-<a href="#" onclick="addToGoogleCalendar('${item.title}', '${date.toISOString()}')">Add to Google Calendar</a></li>`;
+        <a href="#" onclick="addToGoogleCalendar('${item.title}', '${date.toISOString()}')">Add to Google Calendar</a></li>`;
                 }
             }
         });
 
-        callback(totalDaysOff, totalHolidays, details);
+        callback(totalDaysOff, totalHolidays, details, allHolidays); // Pass allHolidays to the callback
     }).fail(function() {
         console.error('Failed to fetch holiday data for ' + year);
-        callback(0, 0, ''); // Return 0 days off if failed
-    });
-
-    // Toggle filter box visibility
-    $('#toggleFiltersButton').click(function() {
-        $('#filterContent').toggle(); // Toggle only the filter content
-        $(this).text($('#filterContent').is(':visible') ? 'Close' : 'Filters'); 
-    });
-
-    $('#closeFilterBox').click(function() {
-        $('#filterBox').hide(); // Hide the entire filter box
+        callback(0, 0, '', []); // Return empty array if failed
     });
 }
 
@@ -1010,6 +1024,7 @@ $(document).ready(function() {
         });
     });
 
+
     $('#fetchHolidays').click(function() {
         console.log("Fetching holidays");
         const year = $('#yearSelect').val(); // Ensure the year is dynamically selected
@@ -1131,10 +1146,15 @@ $(document).ready(function() {
                     }]
                 });
             },
+            
+            
             error: function() {
                 console.error("Failed to fetch holiday data");
                 $('#holidayList').text('Failed to fetch holiday data.');
             }
+
+            
+            
         });
     });
 });
@@ -1161,6 +1181,7 @@ $(document).ready(function() {
     window.open(url, '_blank'); // Open the link in a new tab
 }
 
+
 function calculateDaysOff() {
     const currentYear = new Date().getFullYear();
     const selectedYear = $('#yearSelect').val();
@@ -1169,7 +1190,7 @@ function calculateDaysOff() {
     const includeMinorFastDays = $('#includeMinorFastDays').is(':checked');
     const includePurim = $('#includePurim').is(':checked');
 
-    fetchHolidayData(selectedYear, includeTishaBav, includeCholHaMoed, includeMinorFastDays, includePurim, function(totalDaysOff, totalHolidays, holidayDetails) {
+    fetchHolidayData(selectedYear, includeTishaBav, includeCholHaMoed, includeMinorFastDays, includePurim, function(totalDaysOff, totalHolidays, holidayDetails, allHolidays) {
         const isPast = selectedYear < currentYear;
         const verbTense = isPast ? "needed" : "need";
 
@@ -1197,7 +1218,7 @@ function calculateDaysOff() {
             }
         });
 
-        displayHolidayCalendar();
+        displayHolidayCalendar(allHolidays); // Pass allHolidays to displayHolidayCalendar
     });
 }
 
@@ -1205,30 +1226,11 @@ function calculateDaysOff() {
 
 
 
-function displayHolidayCalendar() {
+
+function displayHolidayCalendar(allHolidays) {
     console.log("Starting to display holiday calendar");
 
-    const results = $('#results').find('ul li');
-    const holidays = [];
-
-    results.each(function() {
-        const holidayText = $(this).text();
-        console.log("Processing result item:", holidayText);
-
-        const match = holidayText.match(/(.+?)\sfalls\son\s(\w+),\s(\d+\/\d+\/\d+)\s\(which is a weekday\)/);
-        if (match) {
-            const holiday = {
-                title: match[1],
-                day: match[2],
-                date: new Date(match[3]),
-                class: $(this).attr('class') // Get the class from the list item
-            };
-            holidays.push(holiday);
-            console.log("Parsed holiday:", holiday);
-        } else {
-            console.log("No match for item:", holidayText);
-        }
-    });
+    const holidays = allHolidays; // Use the passed in allHolidays array
 
     console.log("All parsed holidays:", holidays);
 
@@ -1236,7 +1238,8 @@ function displayHolidayCalendar() {
     calendar.empty();
 
     const currentYear = holidays.length > 0 ? holidays[0].date.getFullYear() : new Date().getFullYear();
-    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const monthNames = ["January", "February", "March", "April", "May", "June", 
+                        "July", "August", "September", "October", "November", "December"];
     const weekdayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
     for (let month = 0; month < 12; month++) {
@@ -1263,7 +1266,7 @@ function displayHolidayCalendar() {
             const dayDiv = $('<div class="calendar-day"></div>').text(day);
             if (holiday) {
                 console.log(`Found holiday on ${date.toDateString()}: ${holiday.title}`);
-                dayDiv.addClass('holiday').addClass(holiday.class).append(`<br>${holiday.title}`); // Add the class from the list item
+                dayDiv.addClass('holiday').addClass(holiday.class).append(`<br>${holiday.title}`);
             }
             daysGrid.append(dayDiv);
         }
@@ -1285,8 +1288,6 @@ $('#toggleCalendar').click(function() {
             });
 
 
-
-            $("#filterBox").draggable(); // Make the filter box draggable
 
 
 
