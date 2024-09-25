@@ -757,12 +757,12 @@ function fetchHolidayData(year, includeTishaBav, includeCholHaMoed, includeMinor
     console.log("Include Purim:", includePurim);
 
     const holidays = [
-                'Pesach I', 'Pesach II', 'Pesach VII', 'Pesach VIII',
-                'Shavuot I', 'Shavuot II',
-                'Sukkot I', 'Sukkot II',
-                'Shmini Atzeret', 'Simchat Torah',
-                'Yom Kippur' // Add Yom Kippur here
-            ];
+        'Pesach I', 'Pesach II', 'Pesach VII', 'Pesach VIII',
+        'Shavuot I', 'Shavuot II',
+        'Sukkot I', 'Sukkot II',
+        'Shmini Atzeret', 'Simchat Torah',
+        'Yom Kippur' // Add Yom Kippur here
+    ];
 
     const yearSpecificHolidays = [
         'Rosh Hashana II'
@@ -812,9 +812,8 @@ function fetchHolidayData(year, includeTishaBav, includeCholHaMoed, includeMinor
                 console.log("Processing holiday:", item.title);
 
                 totalHolidays++;
-                const date = new Date(item.date);
-                date.setDate(date.getDate() + 1); // Adjust for sunset start
-                const dayOfWeek = date.getDay();
+                const date = new Date(item.date + "T00:00:00Z"); // Parse date as UTC
+                const dayOfWeek = date.getUTCDay(); // Get the day of the week in UTC
                 const weekdayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
                 const dayName = weekdayNames[dayOfWeek];
 
@@ -842,7 +841,7 @@ function fetchHolidayData(year, includeTishaBav, includeCholHaMoed, includeMinor
 
                 if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Monday to Friday
                     totalDaysOff++;
-                    details += `<li class="${holidayClass}">${item.title} falls on ${dayName}, ${date.toLocaleDateString()} (which is a weekday). 
+                    details += `<li class="${holidayClass}">${item.title} falls on ${dayName}, ${date.toISOString().split('T')[0]} (which is a weekday). 
         <a href="#" onclick="addToGoogleCalendar('${item.title}', '${date.toISOString()}')">Add to Google Calendar</a></li>`;
                 }
             }
@@ -854,8 +853,6 @@ function fetchHolidayData(year, includeTishaBav, includeCholHaMoed, includeMinor
         callback(0, 0, '', []); // Return empty array if failed
     });
 }
-
-
 
 
 
