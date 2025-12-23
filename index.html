@@ -324,8 +324,8 @@
         }
         
         #filterBox.open {
-                top: 50px; /* Ensure it's visible below the header on mobile */
-            }@
+            top: 50px; /* Ensure it's visible below the header on mobile */
+        }
         
         #filterBox h2 {
             margin-top: 0; /* Remove top margin from the heading */
@@ -352,9 +352,7 @@
             float: right;
         }
         
-        #holidayInfoSection {
-            /* Add any specific styles you want for this section */
-        }
+        /* #holidayInfoSection {} */
         
         #holidayDetails {
             display: flex;
@@ -805,6 +803,7 @@ function fetchHolidayData(year, includeTishaBav, includeCholHaMoed, includeMinor
         let totalDaysOff = 0;
         let totalHolidays = 0;
         let details = '';
+        let weekendDetails = '';
         let allHolidays = []; // New array to store all holidays
 
         data.items.forEach(item => {
@@ -826,8 +825,10 @@ function fetchHolidayData(year, includeTishaBav, includeCholHaMoed, includeMinor
                 console.log("Processing holiday:", item.title);
 
                 totalHolidays++;
-                const date = new Date(item.date + "T00:00:00Z"); // Parse date as UTC
-                const dayOfWeek = date.getUTCDay(); // Get the day of the week in UTC
+                // Parse date as local components to avoid timezone shift
+                const dateParts = item.date.split('-');
+                const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]); 
+                const dayOfWeek = date.getDay(); // Get the day of the week in Local Time
                 const weekdayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
                 const dayName = weekdayNames[dayOfWeek];
 
@@ -855,16 +856,18 @@ function fetchHolidayData(year, includeTishaBav, includeCholHaMoed, includeMinor
 
                 if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Monday to Friday
                     totalDaysOff++;
-                    details += `<li class="${holidayClass}">${item.title} falls on ${dayName}, ${date.toISOString().split('T')[0]} (which is a weekday). 
-        <a href="#" onclick="addToGoogleCalendar('${item.title}', '${date.toISOString()}')">Add to Google Calendar</a></li>`;
+                    details += `<li class="${holidayClass}">${item.title} falls on ${dayName}, ${item.date} (which is a weekday). 
+        <a href="#" onclick="addToGoogleCalendar('${item.title}', '${item.date}')">Add to Google Calendar</a></li>`;
+                } else {
+                    weekendDetails += `<li class="${holidayClass}">${item.title} falls on ${dayName}, ${item.date} (which is a weekend).</li>`;
                 }
             }
         });
 
-        callback(totalDaysOff, totalHolidays, details, allHolidays); // Pass allHolidays to the callback
+        callback(totalDaysOff, totalHolidays, details, weekendDetails, allHolidays); // Pass allHolidays to the callback
     }).fail(function() {
         console.error('Failed to fetch holiday data for ' + year);
-        callback(0, 0, '', []); // Return empty array if failed
+        callback(0, 0, '', '', []); // Return empty array if failed
     });
 }
 
@@ -1202,11 +1205,17 @@ function calculateDaysOff() {
     const includeMinorFastDays = $('#includeMinorFastDays').is(':checked');
     const includePurim = $('#includePurim').is(':checked');
 
-    fetchHolidayData(selectedYear, includeTishaBav, includeCholHaMoed, includeMinorFastDays, includePurim, function(totalDaysOff, totalHolidays, holidayDetails, allHolidays) {
+    fetchHolidayData(selectedYear, includeTishaBav, includeCholHaMoed, includeMinorFastDays, includePurim, function(totalDaysOff, totalHolidays, holidayDetails, weekendDetails, allHolidays) {
         const isPast = selectedYear < currentYear;
         const verbTense = isPast ? "needed" : "need";
 
-        $('#results').html(`You ${verbTense} to take <strong>${totalDaysOff}</strong> workday holidays off work in ${selectedYear}.<ul>${holidayDetails}</ul>`);
+        let html = `You ${verbTense} to take <strong>${totalDaysOff}</strong> workday holidays off work in ${selectedYear}.<ul>${holidayDetails}</ul>`;
+
+        if (weekendDetails) {
+             html += `<br><strong>Weekend Holidays (no day off needed):</strong><ul>${weekendDetails}</ul>`;
+        }
+
+        $('#results').html(html);
 
         if (workdaysChart) workdaysChart.destroy();
         var ctx = document.getElementById('workdaysChart').getContext('2d');
