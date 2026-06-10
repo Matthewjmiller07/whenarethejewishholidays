@@ -136,7 +136,8 @@
         const h = byDate.get(iso);
         if (h) {
           cell.classList.add('hol', `c-${h.category}`);
-          cell.title = `${h.title} · ${h.hebrewDate}`;
+          cell.dataset.tip = `${h.title} · ${h.hebrewDate}`;
+          cell.setAttribute('aria-label', `${h.title}, ${h.hebrewDate}`);
         }
         if (iso === todayIso) cell.classList.add('today');
         cell.textContent = d;

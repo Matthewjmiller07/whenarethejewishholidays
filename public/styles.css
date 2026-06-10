@@ -233,7 +233,6 @@ h2.section-title {
   border-radius: 14px;
   padding: 1.6rem 1.7rem 1.5rem;
   box-shadow: 0 24px 60px -24px rgba(28, 34, 51, 0.55), 0 0 0 1px rgba(200, 155, 53, 0.25);
-  transform: rotate(1.2deg);
   position: relative;
 }
 .next-card::before {
@@ -534,6 +533,43 @@ section.block {
 .day.hol.c-major-fast, .day.hol.c-minor-fast { background: var(--sea); }
 .day.hol.c-minor, .day.hol.c-modern { background: var(--moss); }
 .day.today { outline: 2px solid var(--pom); outline-offset: 1px; }
+.day[data-tip]:hover { z-index: 7; }
+.day[data-tip]::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 7px);
+  transform: translateX(-50%) translateY(3px);
+  background: var(--night);
+  color: var(--cream);
+  font-family: var(--mono);
+  font-size: 0.64rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  padding: 0.5em 0.75em;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: 0 10px 24px -10px rgba(28, 34, 51, 0.6);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease, transform 0.12s ease;
+  z-index: 6;
+}
+.day[data-tip]::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 2px);
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--night);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+  z-index: 6;
+}
+.day[data-tip]:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+.day[data-tip]:hover::before { opacity: 1; }
 
 /* ————— Compare ————— */
 .compare-controls { display: flex; gap: 1rem; align-items: end; flex-wrap: wrap; margin-bottom: 1.6rem; }
