@@ -30,7 +30,6 @@
   "homepage": "https://github.com/Matthewjmiller07/whenarethejewishholidays#readme",
   "dependencies": {
     "@hebcal/core": "^6.5.3",
-    "express": "^5.2.1",
-    "serverless-http": "^4.0.0"
+    "express": "^5.2.1"
   }
 }

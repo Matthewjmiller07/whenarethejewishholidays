@@ -2,10 +2,4 @@
   publish = "public"
 
 [functions]
-  node_bundler = "esbuild"
   included_files = ["public/openapi.yaml"]
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
-  status = 200
