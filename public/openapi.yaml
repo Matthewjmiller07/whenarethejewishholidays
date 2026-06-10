@@ -1,0 +1,287 @@
+openapi: 3.1.0
+info:
+  title: When Are the Jewish Holidays — API
+  version: 2.0.0
+  description: |
+    Free, no-auth REST API for Jewish holiday dates and workday-off
+    calculations. All dates are computed locally from the Hebrew calendar
+    via @hebcal/core — no third-party calls, no rate limits beyond fair use.
+
+    **HR integration:** the `/calendar.ics` endpoint emits an RFC 5545 iCalendar
+    feed suitable for Workday absence calendars, Outlook, and Google Calendar.
+  license:
+    name: MIT
+    identifier: MIT
+servers:
+  - url: https://whenarethejewishholidays.com/api/v1
+  - url: http://localhost:3000/api/v1
+tags:
+  - name: holidays
+    description: Holiday dates and metadata
+  - name: workdays
+    description: Workday-off calculations for HR planning
+  - name: feeds
+    description: Machine-readable calendar feeds
+
+paths:
+  /health:
+    get:
+      summary: Service health check
+      operationId: getHealth
+      responses:
+        '200':
+          description: Service is up.
+          content:
+            application/json:
+              example: { status: ok, version: 2.0.0, time: '2026-06-09T12:00:00Z' }
+
+  /holidays:
+    get:
+      tags: [holidays]
+      summary: All holidays in a Gregorian year
+      operationId: listHolidays
+      parameters:
+        - $ref: '#/components/parameters/year'
+        - $ref: '#/components/parameters/il'
+        - name: categories
+          in: query
+          description: >
+            Comma-separated category filter. Categories: `yomtov`, `cholhamoed`,
+            `major-fast`, `minor-fast`, `minor`, `modern`, `rosh-chodesh`, `erev`.
+          schema: { type: string, example: 'yomtov,cholhamoed' }
+      responses:
+        '200':
+          description: Holidays sorted by date.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  year: { type: integer }
+                  israel: { type: boolean }
+                  count: { type: integer }
+                  holidays:
+                    type: array
+                    items: { $ref: '#/components/schemas/Holiday' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /holidays/next:
+    get:
+      tags: [holidays]
+      summary: Upcoming holidays after a date
+      description: >
+        Returns the next holidays on or after `after` (default today).
+        Rosh Chodesh and erev days are excluded.
+      operationId: nextHolidays
+      parameters:
+        - name: after
+          in: query
+          schema: { type: string, format: date, example: '2026-06-09' }
+        - name: count
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 50, default: 5 }
+        - $ref: '#/components/parameters/il'
+      responses:
+        '200':
+          description: Upcoming holidays with `daysUntil`.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  after: { type: string, format: date }
+                  count: { type: integer }
+                  holidays:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: '#/components/schemas/Holiday'
+                        - type: object
+                          properties:
+                            daysUntil: { type: integer }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /workdays:
+    get:
+      tags: [workdays]
+      summary: Workdays off required in a year
+      description: >
+        Splits observed holidays into those falling on workdays (time off
+        required) and those falling on the configured weekend. Yom Tov days
+        are always observed; add more groups with `include`.
+      operationId: getWorkdays
+      parameters:
+        - $ref: '#/components/parameters/year'
+        - $ref: '#/components/parameters/include'
+        - $ref: '#/components/parameters/weekend'
+        - $ref: '#/components/parameters/il'
+      responses:
+        '200':
+          description: Workday-off summary.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WorkdaysResult' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /workdays/compare:
+    get:
+      tags: [workdays]
+      summary: Compare workdays off across years
+      operationId: compareWorkdays
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema: { type: integer, example: 2024 }
+        - name: to
+          in: query
+          required: true
+          schema: { type: integer, example: 2034 }
+        - $ref: '#/components/parameters/include'
+        - $ref: '#/components/parameters/weekend'
+        - $ref: '#/components/parameters/il'
+      responses:
+        '200':
+          description: Per-year series (max span 100 years).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  from: { type: integer }
+                  to: { type: integer }
+                  israel: { type: boolean }
+                  included: { type: array, items: { type: string } }
+                  series:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        year: { type: integer }
+                        daysOffRequired: { type: integer }
+                        totalObserved: { type: integer }
+                        weekendHolidays: { type: integer }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /calendar.ics:
+    get:
+      tags: [feeds]
+      summary: iCalendar feed of observed holidays
+      description: >
+        RFC 5545 all-day VEVENTs for every observed holiday in the year range.
+        Subscribe from Workday, Outlook, Google Calendar, or Apple Calendar.
+        Span is limited to 25 years.
+      operationId: getICS
+      parameters:
+        - name: from
+          in: query
+          schema: { type: integer, example: 2026 }
+          description: First year (default current year; `year` is an alias).
+        - name: to
+          in: query
+          schema: { type: integer, example: 2028 }
+          description: Last year inclusive (default same as `from`).
+        - $ref: '#/components/parameters/include'
+        - $ref: '#/components/parameters/weekend'
+        - $ref: '#/components/parameters/il'
+      responses:
+        '200':
+          description: iCalendar document.
+          content:
+            text/calendar:
+              schema: { type: string }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /about:
+    get:
+      tags: [holidays]
+      summary: Reference data
+      description: Valid `include` tokens and one-paragraph holiday descriptions.
+      operationId: getAbout
+      responses:
+        '200':
+          description: Reference data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  includeTokens: { type: array, items: { type: string } }
+                  holidays:
+                    type: object
+                    additionalProperties: { type: string }
+
+components:
+  parameters:
+    year:
+      name: year
+      in: query
+      description: Gregorian year, 1900–2200. Defaults to the current year.
+      schema: { type: integer, example: 2026 }
+    il:
+      name: il
+      in: query
+      description: >
+        Israel scheme — one-day Yom Tov, no second diaspora days.
+        Defaults to false (diaspora).
+      schema: { type: boolean, default: false }
+    include:
+      name: include
+      in: query
+      description: >
+        Comma-separated optional observance groups added to the always-counted
+        Yom Tov days. Tokens: `cholhamoed`, `tisha-bav`, `minor-fasts`,
+        `purim`, `shushan-purim`, `chanukah`, `modern`.
+      schema: { type: string, example: 'cholhamoed,tisha-bav' }
+    weekend:
+      name: weekend
+      in: query
+      description: >
+        Which days count as the weekend: `sat-sun` (default), `fri-sat`,
+        `sun`, `none`, or comma-separated day names (e.g. `friday,saturday`).
+      schema: { type: string, default: sat-sun }
+
+  responses:
+    BadRequest:
+      description: Invalid parameter.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error: { type: string, example: bad_request }
+              message: { type: string }
+
+  schemas:
+    Holiday:
+      type: object
+      properties:
+        title: { type: string, example: 'Pesach I' }
+        hebrew: { type: string, example: 'פֶּסַח א׳' }
+        basename: { type: string, example: 'Pesach' }
+        date: { type: string, format: date, example: '2026-04-02' }
+        hebrewDate: { type: string, example: '15 Nisan 5786' }
+        weekday: { type: string, example: 'Thursday' }
+        isWeekend: { type: boolean }
+        category:
+          type: string
+          enum: [yomtov, cholhamoed, major-fast, minor-fast, minor, modern, rosh-chodesh, special-shabbat, erev, other]
+        yomTov: { type: boolean, description: 'True when work is traditionally prohibited.' }
+        workRestricted: { type: boolean }
+        about: { type: string, description: 'Short plain-English description, when available.' }
+        url: { type: string, format: uri, description: 'Hebcal reference page.' }
+    WorkdaysResult:
+      type: object
+      properties:
+        year: { type: integer }
+        israel: { type: boolean }
+        weekend: { type: array, items: { type: string }, example: [Saturday, Sunday] }
+        included: { type: array, items: { type: string }, example: [yomtov, cholhamoed] }
+        daysOffRequired: { type: integer, description: 'Observed holidays landing on workdays.' }
+        totalObserved: { type: integer }
+        weekdayHolidays:
+          type: array
+          items: { $ref: '#/components/schemas/Holiday' }
+        weekendHolidays:
+          type: array
+          items: { $ref: '#/components/schemas/Holiday' }

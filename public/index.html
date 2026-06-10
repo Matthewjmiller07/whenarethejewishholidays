@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>When Are the Jewish Holidays? — An Almanac for the Working Week</title>
+  <meta name="description" content="Jewish holiday dates, a workday-off calculator, year-at-a-glance calendars, and a free REST API for HR systems like Workday.">
+
+  <meta property="og:title" content="When Are the Jewish Holidays?">
+  <meta property="og:description" content="Holiday dates, a workday-off calculator, and a free REST API for HR integration.">
+  <meta property="og:url" content="https://whenarethejewishholidays.com">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,WONK@0,9..144,300..700,0..1;1,9..144,300..700,0..1&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Spline+Sans+Mono:wght@400;500;600&family=Frank+Ruhl+Libre:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🕎</text></svg>">
+</head>
+<body>
+
+  <nav class="topbar">
+    <a class="wordmark" href="/"><span class="he">חגים</span> When Are the Jewish Holidays?</a>
+    <div class="topnav">
+      <a href="#planner">Planner</a>
+      <a href="#calendar">Calendar</a>
+      <a href="#compare">Compare</a>
+      <a href="#about">The Holidays</a>
+      <a class="api-link" href="/docs">API Docs</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-ghost" aria-hidden="true">ח</div>
+    <div>
+      <span class="kicker">An almanac for the working week</span>
+      <h1>When are the <em>Jewish holidays</em> — and how many days off will you need?</h1>
+      <p class="hero-sub">Exact dates for every Yom Tov, fast, and festival; which ones land on
+        workdays; and a free JSON&nbsp;API and iCal feed so your HR system already knows.</p>
+      <div class="hero-actions">
+        <a class="btn" href="#planner">Plan your year</a>
+        <a class="btn ghost" href="/docs">Integrate the API</a>
+      </div>
+    </div>
+    <aside class="next-card" id="nextCard" aria-live="polite">
+      <span class="kicker">Next on the calendar</span>
+      <h3 id="nextTitle">Loading…</h3>
+      <div class="he-name" id="nextHebrew"></div>
+      <div class="next-count">
+        <span class="num" id="nextDays">—</span>
+        <span class="lbl">days<br>away</span>
+      </div>
+      <div class="date-line" id="nextDate"></div>
+    </aside>
+  </header>
+
+  <hr class="rule">
+
+  <section class="block" id="planner">
+    <div class="section-head">
+      <span class="section-no">I.</span> <span class="kicker">The Planner</span>
+      <h2 class="section-title">Workdays off, counted for you.</h2>
+      <p class="section-lede">Yom Tov days — when work is traditionally prohibited — are always counted.
+        Add the observances your household keeps, set your weekend, and the ledger updates.</p>
+    </div>
+
+    <div class="planner-grid">
+      <aside class="controls">
+        <label class="control-label" for="yearInput">Year</label>
+        <div class="year-stepper">
+          <button id="yearPrev" aria-label="Previous year">‹</button>
+          <input id="yearInput" type="number" min="1900" max="2200" value="2026">
+          <button id="yearNext" aria-label="Next year">›</button>
+        </div>
+
+        <span class="control-label">Also observe</span>
+        <div class="chips" id="chips">
+          <span class="chip" data-token="cholhamoed">Chol HaMoed</span>
+          <span class="chip" data-token="tisha-bav">Tish&rsquo;a B&rsquo;Av</span>
+          <span class="chip" data-token="minor-fasts">Minor fasts</span>
+          <span class="chip" data-token="purim">Purim</span>
+          <span class="chip" data-token="chanukah">Chanukah</span>
+        </div>
+
+        <span class="control-label">Weekend convention</span>
+        <div class="select-row">
+          <select id="weekendSelect">
+            <option value="sat-sun">Saturday – Sunday</option>
+            <option value="fri-sat">Friday – Saturday (Israel)</option>
+            <option value="sun">Sunday only</option>
+            <option value="none">No weekend (count all)</option>
+          </select>
+        </div>
+
+        <span class="control-label">Calendar scheme</span>
+        <div class="select-row">
+          <select id="ilSelect">
+            <option value="false">Diaspora (two-day Yom Tov)</option>
+            <option value="true">Israel (one-day Yom Tov)</option>
+          </select>
+        </div>
+
+        <a class="btn ics-btn" id="icsBtn" href="/api/v1/calendar.ics" download>↓ Download .ics feed</a>
+      </aside>
+
+      <div id="resultPanel">
+        <div class="result-head">
+          <div class="big-number" id="bigNumber">–</div>
+          <div class="big-number-label">
+            <strong id="bigLabel">workdays off</strong>
+            <span id="bigSub">calculating…</span>
+          </div>
+        </div>
+        <div class="holiday-cols">
+          <div class="holiday-col weekday">
+            <h4><span class="dot"></span> Falls on a workday</h4>
+            <ul class="holiday-list" id="weekdayList"></ul>
+          </div>
+          <div class="holiday-col weekend">
+            <h4><span class="dot"></span> Falls on the weekend</h4>
+            <ul class="holiday-list" id="weekendList"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="cal-band">
+    <section class="block" id="calendar">
+      <div class="section-head">
+        <span class="section-no">II.</span> <span class="kicker">Year at a glance</span>
+        <h2 class="section-title">Twelve months, inked.</h2>
+        <p class="section-lede">Every observed holiday for the selected year, plotted on the civil calendar.
+          Hover a marked day for its name.</p>
+      </div>
+      <div class="legend">
+        <span><i class="l-yomtov"></i> Yom Tov</span>
+        <span><i class="l-cholhamoed"></i> Chol HaMoed</span>
+        <span><i class="l-fast"></i> Fast day</span>
+        <span><i class="l-minor"></i> Minor festival</span>
+      </div>
+      <div class="months" id="months"></div>
+    </section>
+  </div>
+
+  <section class="block" id="compare">
+    <div class="section-head">
+      <span class="section-no">III.</span> <span class="kicker">The long view</span>
+      <h2 class="section-title">Some years cost more than others.</h2>
+      <p class="section-lede">The Hebrew calendar drifts against the civil week, so the number of
+        holidays landing on workdays swings year to year. Compare a span of years below.</p>
+    </div>
+    <div class="compare-controls">
+      <div class="field">
+        <label class="control-label" for="fromYear">From</label>
+        <input type="number" id="fromYear" min="1900" max="2200" value="2024">
+      </div>
+      <div class="field">
+        <label class="control-label" for="toYear">To</label>
+        <input type="number" id="toYear" min="1900" max="2200" value="2034">
+      </div>
+      <button class="btn ghost" id="compareBtn">Redraw</button>
+    </div>
+    <div class="chart-frame">
+      <svg id="compareChart" viewBox="0 0 960 380" role="img" aria-label="Workdays off per year"></svg>
+      <div class="chart-note">workdays off · current filters applied</div>
+    </div>
+  </section>
+
+  <div class="cal-band">
+    <section class="block" id="about">
+      <div class="section-head">
+        <span class="section-no">IV.</span> <span class="kicker">A field guide</span>
+        <h2 class="section-title">About the holidays.</h2>
+        <p class="section-lede">What each observance is, when it falls this year, and whether work
+          is traditionally permitted.</p>
+      </div>
+      <div class="about-grid" id="aboutGrid"></div>
+    </section>
+  </div>
+
+  <div class="api-band">
+    <section class="block" id="api">
+      <span class="section-no">V.</span> <span class="kicker">For machines</span>
+      <h2 class="section-title">One API. Every HR calendar.</h2>
+      <p class="section-lede">Everything on this page is powered by a free, no-auth JSON API —
+        computed locally from the Hebrew calendar, no rate-limited third parties. Pipe it into
+        Workday, BambooHR, Google Calendar, or anything that speaks REST or iCal.</p>
+      <div class="api-cols">
+        <div>
+          <ul class="api-points">
+            <li>JSON endpoints for holidays, workday counts, multi-year comparisons</li>
+            <li>iCal (.ics) feed for Workday absence &amp; Outlook/Google calendars</li>
+            <li>Diaspora or Israel schemes, configurable weekends (Fri–Sat supported)</li>
+            <li>OpenAPI 3.1 spec — generate a client in any language</li>
+          </ul>
+          <div class="hero-actions">
+            <a class="btn" href="/docs">Read the docs</a>
+            <a class="btn ghost" href="/api/v1/openapi.yaml">OpenAPI spec</a>
+          </div>
+        </div>
+        <pre class="codeblock"><span class="c"># How many days off in 2026?</span>
+$ curl <span class="g">'https://whenarethejewishholidays.com\
+    /api/v1/workdays?<span class="p">year=2026</span>&amp;<span class="p">include=cholhamoed</span>'</span>
+
+{
+  <span class="g">"year"</span>: 2026,
+  <span class="g">"daysOffRequired"</span>: <span class="p">13</span>,
+  <span class="g">"weekdayHolidays"</span>: [
+    { <span class="g">"title"</span>: "Pesach I", <span class="g">"date"</span>: "2026-04-02", … }
+  ]
+}</pre>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <span class="he">לְכָל זְמַן וְעֵת לְכָל חֵפֶץ</span>
+    A season for everything, and a time for every purpose. ·
+    Calendar computation by <a href="https://github.com/hebcal/hebcal-es6">@hebcal/core</a> ·
+    <a href="https://github.com/Matthewjmiller07/whenarethejewishholidays">Source on GitHub</a>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>

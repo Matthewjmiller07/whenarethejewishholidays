@@ -1,0 +1,36 @@
+{
+  "name": "whenarethejewishholidays",
+  "version": "2.0.0",
+  "description": "Jewish holiday calendar, workday-off calculator, and REST API for HR system integration (Workday, BambooHR, etc.)",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node test/api.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Matthewjmiller07/whenarethejewishholidays.git"
+  },
+  "keywords": [
+    "jewish-holidays",
+    "hebcal",
+    "calendar",
+    "api",
+    "workday",
+    "hr",
+    "ical"
+  ],
+  "author": "Matthew Miller",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Matthewjmiller07/whenarethejewishholidays/issues"
+  },
+  "homepage": "https://github.com/Matthewjmiller07/whenarethejewishholidays#readme",
+  "dependencies": {
+    "@hebcal/core": "^6.5.3",
+    "express": "^5.2.1",
+    "serverless-http": "^4.0.0"
+  }
+}

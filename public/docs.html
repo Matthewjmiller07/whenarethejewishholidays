@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Documentation — When Are the Jewish Holidays?</title>
+  <meta name="description" content="REST API documentation for the Jewish holidays API: JSON endpoints, iCal feeds, and Workday/HR integration guide.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Spline+Sans+Mono:wght@400;500;600&family=Frank+Ruhl+Libre:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='0.9em' font-size='90'>🕎</text></svg>">
+  <style>
+    :root {
+      --night: #1c2233;
+      --night-deep: #141927;
+      --night-card: #222a3f;
+      --cream: #efe6d0;
+      --cream-soft: #b9b09a;
+      --gold: #c89b35;
+      --gold-dim: rgba(200, 155, 53, 0.3);
+      --pom: #d98a76;
+      --green: #8fb573;
+      --serif: 'Fraunces', Georgia, serif;
+      --sans: 'Alegreya Sans', sans-serif;
+      --mono: 'Spline Sans Mono', monospace;
+      --hebrew: 'Frank Ruhl Libre', serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--night);
+      color: var(--cream);
+      font-family: var(--sans);
+      font-size: 16.5px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 999; opacity: 0.4;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+    ::selection { background: var(--gold-dim); }
+    a { color: var(--gold); text-underline-offset: 3px; }
+    a:hover { color: var(--cream); }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+      padding: 0.7rem clamp(1rem, 4vw, 3rem);
+      background: color-mix(in srgb, var(--night) 88%, transparent);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--gold-dim);
+    }
+    .wordmark {
+      font-family: var(--serif); font-variation-settings: 'opsz' 60, 'wght' 620;
+      font-size: 1rem; text-decoration: none; color: var(--cream);
+      display: flex; align-items: baseline; gap: 0.5rem;
+    }
+    .wordmark .he { font-family: var(--hebrew); color: var(--gold); font-size: 1.15rem; }
+    .topbar nav { display: flex; gap: 1.3rem; }
+    .topbar nav a {
+      font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.18em;
+      text-transform: uppercase; text-decoration: none; color: var(--cream-soft);
+    }
+    .topbar nav a:hover { color: var(--gold); }
+
+    .wrap { max-width: 1160px; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 3rem); }
+    .layout { display: grid; grid-template-columns: 215px 1fr; gap: clamp(1.5rem, 4vw, 3.5rem); }
+
+    .toc {
+      position: sticky; top: 76px; align-self: start;
+      padding: 2.6rem 0;
+      font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em;
+    }
+    .toc .h { color: var(--gold); letter-spacing: 0.25em; text-transform: uppercase; font-size: 0.62rem; margin: 1.2rem 0 0.5rem; }
+    .toc a { display: block; color: var(--cream-soft); text-decoration: none; padding: 0.22rem 0; border-left: 1px solid var(--gold-dim); padding-left: 0.8rem; }
+    .toc a:hover { color: var(--cream); border-left-color: var(--gold); }
+
+    main { padding: 2.6rem 0 5rem; min-width: 0; }
+
+    .kicker { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); }
+    h1 {
+      font-family: var(--serif); font-variation-settings: 'opsz' 144, 'wght' 520;
+      font-size: clamp(2.4rem, 5vw, 3.8rem); line-height: 1.02; letter-spacing: -0.015em;
+      margin: 0.4rem 0 0.8rem;
+    }
+    h1 em { font-style: italic; color: var(--pom); }
+    .lede { color: var(--cream-soft); max-width: 64ch; font-size: 1.08rem; }
+
+    h2 {
+      font-family: var(--serif); font-variation-settings: 'opsz' 100, 'wght' 560;
+      font-size: 1.8rem; margin: 3.4rem 0 0.8rem;
+      padding-top: 1.6rem; border-top: 3px double var(--gold-dim);
+    }
+    h3 { font-family: var(--serif); font-size: 1.25rem; margin: 2rem 0 0.5rem; }
+    p, li { color: var(--cream-soft); }
+    strong { color: var(--cream); }
+
+    .endpoint {
+      background: var(--night-card);
+      border: 1px solid var(--gold-dim);
+      border-radius: 12px;
+      padding: 1.4rem 1.5rem;
+      margin: 1.4rem 0;
+      box-shadow: 0 18px 44px -28px rgba(0,0,0,0.8);
+    }
+    .endpoint .sig { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+    .method {
+      font-family: var(--mono); font-size: 0.68rem; font-weight: 600; letter-spacing: 0.12em;
+      background: var(--green); color: var(--night-deep);
+      border-radius: 5px; padding: 0.25em 0.7em;
+    }
+    .path { font-family: var(--mono); font-size: 0.95rem; color: var(--cream); word-break: break-all; }
+    .endpoint .desc { margin: 0.3rem 0 0.9rem; font-size: 0.96rem; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; margin: 0.8rem 0 1rem; }
+    th {
+      font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--gold); text-align: left; padding: 0.45rem 0.7rem 0.45rem 0;
+      border-bottom: 1px solid var(--gold-dim);
+    }
+    td { padding: 0.5rem 0.7rem 0.5rem 0; border-bottom: 1px solid rgba(200,155,53,0.12); vertical-align: top; color: var(--cream-soft); }
+    td code, p code, li code {
+      font-family: var(--mono); font-size: 0.82em;
+      background: var(--night-deep); border: 1px solid var(--gold-dim);
+      border-radius: 4px; padding: 0.1em 0.4em; color: var(--gold);
+    }
+    td:first-child code { color: var(--pom); }
+
+    pre {
+      background: var(--night-deep);
+      border: 1px solid var(--gold-dim);
+      border-radius: 10px;
+      padding: 1.1rem 1.2rem;
+      font-family: var(--mono); font-size: 0.78rem; line-height: 1.6;
+      overflow-x: auto;
+      margin: 0.9rem 0;
+    }
+    pre .c { color: #6e7891; }
+    pre .g { color: var(--gold); }
+    pre .p { color: var(--pom); }
+    pre .gr { color: var(--green); }
+
+    .pill-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.6rem 0 1rem; }
+    .pill {
+      font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.06em;
+      border: 1px solid var(--gold-dim); border-radius: 999px; padding: 0.32em 0.85em; color: var(--cream-soft);
+    }
+    .pill b { color: var(--gold); font-weight: 500; }
+
+    .callout {
+      border-left: 3px solid var(--gold);
+      background: rgba(200,155,53,0.07);
+      border-radius: 0 10px 10px 0;
+      padding: 0.9rem 1.2rem;
+      margin: 1.2rem 0;
+      font-size: 0.95rem;
+    }
+    .callout .t { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--gold); display: block; margin-bottom: 0.3rem; }
+
+    ol.steps { counter-reset: step; list-style: none; padding: 0; }
+    ol.steps li {
+      counter-increment: step;
+      position: relative; padding: 0.7rem 0 0.7rem 3.2rem;
+      border-bottom: 1px solid rgba(200,155,53,0.12);
+    }
+    ol.steps li::before {
+      content: counter(step, upper-roman);
+      position: absolute; left: 0; top: 0.75rem;
+      font-family: var(--serif); font-style: italic; font-size: 1.15rem; color: var(--pom);
+    }
+
+    footer { border-top: 1px solid var(--gold-dim); padding: 2rem 0 3rem; text-align: center; color: var(--cream-soft); font-size: 0.85rem; }
+    footer .he { font-family: var(--hebrew); color: var(--gold); display: block; font-size: 1.2rem; margin-bottom: 0.5rem; }
+
+    @media (max-width: 880px) {
+      .layout { grid-template-columns: 1fr; }
+      .toc { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="topbar">
+    <a class="wordmark" href="/"><span class="he">חגים</span> When Are the Jewish Holidays?</a>
+    <nav>
+      <a href="/">← Back to site</a>
+      <a href="/api/v1/openapi.yaml">OpenAPI Spec</a>
+    </nav>
+  </nav>
+
+  <div class="wrap">
+    <div class="layout">
+
+      <aside class="toc">
+        <div class="h">Getting started</div>
+        <a href="#overview">Overview</a>
+        <a href="#quickstart">Quickstart</a>
+        <a href="#concepts">Concepts</a>
+        <div class="h">Endpoints</div>
+        <a href="#ep-holidays">GET /holidays</a>
+        <a href="#ep-next">GET /holidays/next</a>
+        <a href="#ep-workdays">GET /workdays</a>
+        <a href="#ep-compare">GET /workdays/compare</a>
+        <a href="#ep-ics">GET /calendar.ics</a>
+        <a href="#ep-about">GET /about</a>
+        <a href="#ep-health">GET /health</a>
+        <div class="h">Integration</div>
+        <a href="#workday">Workday</a>
+        <a href="#outlook">Outlook &amp; Google</a>
+        <a href="#errors">Errors</a>
+      </aside>
+
+      <main>
+        <span class="kicker">API · v1</span>
+        <h1>The Jewish holidays, <em>as JSON.</em></h1>
+        <p class="lede">A free, no-authentication REST API for Jewish holiday dates and
+          workday-off calculations — built for HR systems, absence calendars, and anything
+          that plans around the Hebrew calendar. Dates are computed locally from
+          <a href="https://github.com/hebcal/hebcal-es6">@hebcal/core</a>; no upstream calls.</p>
+
+        <div class="pill-row">
+          <span class="pill"><b>Base URL</b> https://whenarethejewishholidays.com/api/v1</span>
+          <span class="pill"><b>Auth</b> none</span>
+          <span class="pill"><b>Format</b> JSON · iCal</span>
+          <span class="pill"><b>CORS</b> open</span>
+        </div>
+
+        <h2 id="overview">Overview</h2>
+        <p>Seven read-only endpoints. Responses are cached for one hour
+          (<code>Cache-Control: public, max-age=3600</code>) — holiday dates do not change.</p>
+        <table>
+          <tr><th>Endpoint</th><th>Returns</th></tr>
+          <tr><td><code>GET /holidays</code></td><td>Every holiday in a Gregorian year</td></tr>
+          <tr><td><code>GET /holidays/next</code></td><td>Upcoming holidays with countdown</td></tr>
+          <tr><td><code>GET /workdays</code></td><td>Which holidays require a day off work</td></tr>
+          <tr><td><code>GET /workdays/compare</code></td><td>Days-off totals across a span of years</td></tr>
+          <tr><td><code>GET /calendar.ics</code></td><td>iCalendar feed (Workday, Outlook, Google)</td></tr>
+          <tr><td><code>GET /about</code></td><td>Reference data and holiday descriptions</td></tr>
+          <tr><td><code>GET /health</code></td><td>Liveness probe</td></tr>
+        </table>
+
+        <h2 id="quickstart">Quickstart</h2>
+<pre><span class="c"># How many workdays off does 2026 require?</span>
+$ curl <span class="g">'https://whenarethejewishholidays.com/api/v1/workdays?year=2026'</span>
+
+{
+  <span class="g">"year"</span>: 2026,
+  <span class="g">"israel"</span>: false,
+  <span class="g">"weekend"</span>: [<span class="gr">"Saturday"</span>, <span class="gr">"Sunday"</span>],
+  <span class="g">"included"</span>: [<span class="gr">"yomtov"</span>],
+  <span class="g">"daysOffRequired"</span>: <span class="p">6</span>,
+  <span class="g">"totalObserved"</span>: <span class="p">13</span>,
+  <span class="g">"weekdayHolidays"</span>: [
+    {
+      <span class="g">"title"</span>: <span class="gr">"Pesach I"</span>,
+      <span class="g">"hebrew"</span>: <span class="gr">"פֶּסַח א׳"</span>,
+      <span class="g">"date"</span>: <span class="gr">"2026-04-02"</span>,
+      <span class="g">"hebrewDate"</span>: <span class="gr">"15 Nisan 5786"</span>,
+      <span class="g">"weekday"</span>: <span class="gr">"Thursday"</span>,
+      <span class="g">"category"</span>: <span class="gr">"yomtov"</span>,
+      <span class="g">"yomTov"</span>: true,
+      <span class="g">"about"</span>: <span class="gr">"Passover, the eight-day festival of freedom…"</span>
+    }
+  ],
+  <span class="g">"weekendHolidays"</span>: [ <span class="c">…</span> ]
+}</pre>
+
+        <h2 id="concepts">Concepts</h2>
+        <h3>Always counted: Yom Tov</h3>
+        <p>Days when work is traditionally prohibited are always part of the workday
+          calculation: Rosh Hashana (2 days), Yom Kippur, Sukkot I–II, Shmini Atzeret,
+          Simchat Torah, Pesach I–II and VII–VIII, and Shavuot I–II.
+          With <code>il=true</code> the one-day Israeli scheme is used.</p>
+
+        <h3>Optional groups: <code>include</code></h3>
+        <p>Observance varies by community, so everything else is opt-in via the
+          <code>include</code> parameter:</p>
+        <table>
+          <tr><th>Token</th><th>Adds</th></tr>
+          <tr><td><code>cholhamoed</code></td><td>Intermediate days of Pesach and Sukkot (incl. Hoshana Raba)</td></tr>
+          <tr><td><code>tisha-bav</code></td><td>Tish'a B'Av (major fast)</td></tr>
+          <tr><td><code>minor-fasts</code></td><td>Tzom Gedaliah, Asara B'Tevet, Ta'anit Esther, Tzom Tammuz, Ta'anit Bechorot</td></tr>
+          <tr><td><code>purim</code></td><td>Purim</td></tr>
+          <tr><td><code>shushan-purim</code></td><td>Shushan Purim (walled cities, e.g. Jerusalem)</td></tr>
+          <tr><td><code>chanukah</code></td><td>All eight days of Chanukah</td></tr>
+          <tr><td><code>modern</code></td><td>Modern Israeli holidays (Yom HaAtzmaut, Yom Yerushalayim…)</td></tr>
+        </table>
+
+        <h3>Weekends</h3>
+        <p>The <code>weekend</code> parameter controls which days don't cost a vacation day:
+          <code>sat-sun</code> (default), <code>fri-sat</code> (Israeli work week),
+          <code>sun</code>, <code>none</code>, or comma-separated day names.</p>
+
+        <h2 id="ep-holidays">Holidays</h2>
+        <div class="endpoint" id="ep-holidays-card">
+          <div class="sig"><span class="method">GET</span><span class="path">/api/v1/holidays</span></div>
+          <p class="desc">Every holiday in a Gregorian year, sorted by date.</p>
+          <table>
+            <tr><th>Param</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>year</code></td><td>integer</td><td>1900–2200. Default: current year.</td></tr>
+            <tr><td><code>il</code></td><td>boolean</td><td>Israel scheme. Default <code>false</code>.</td></tr>
+            <tr><td><code>categories</code></td><td>string</td><td>Filter: <code>yomtov,cholhamoed,major-fast,minor-fast,minor,modern,rosh-chodesh,erev</code></td></tr>
+          </table>
+<pre>$ curl <span class="g">'…/api/v1/holidays?year=2026&amp;categories=yomtov'</span></pre>
+        </div>
+
+        <div class="endpoint" id="ep-next">
+          <div class="sig"><span class="method">GET</span><span class="path">/api/v1/holidays/next</span></div>
+          <p class="desc">The next holidays on or after a date, each with <code>daysUntil</code>.
+            Rosh Chodesh and erev days are excluded. Ideal for dashboards and Slack bots.</p>
+          <table>
+            <tr><th>Param</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>after</code></td><td>date</td><td>ISO date. Default: today.</td></tr>
+            <tr><td><code>count</code></td><td>integer</td><td>1–50. Default 5.</td></tr>
+            <tr><td><code>il</code></td><td>boolean</td><td>Israel scheme.</td></tr>
+          </table>
+<pre>$ curl <span class="g">'…/api/v1/holidays/next?after=2026-09-01&amp;count=3'</span></pre>
+        </div>
+
+        <h2 id="ep-workdays">Workdays</h2>
+        <div class="endpoint">
+          <div class="sig"><span class="method">GET</span><span class="path">/api/v1/workdays</span></div>
+          <p class="desc">The core HR endpoint: observed holidays split into
+            <code>weekdayHolidays</code> (time off required) and <code>weekendHolidays</code>,
+            with a <code>daysOffRequired</code> total.</p>
+          <table>
+            <tr><th>Param</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>year</code></td><td>integer</td><td>1900–2200. Default: current year.</td></tr>
+            <tr><td><code>include</code></td><td>string</td><td>Optional observance tokens (see <a href="#concepts">Concepts</a>).</td></tr>
+            <tr><td><code>weekend</code></td><td>string</td><td><code>sat-sun</code> · <code>fri-sat</code> · <code>sun</code> · <code>none</code></td></tr>
+            <tr><td><code>il</code></td><td>boolean</td><td>Israel scheme.</td></tr>
+          </table>
+<pre>$ curl <span class="g">'…/api/v1/workdays?year=2026&amp;include=cholhamoed,tisha-bav&amp;weekend=fri-sat&amp;il=true'</span></pre>
+        </div>
+
+        <div class="endpoint" id="ep-compare">
+          <div class="sig"><span class="method">GET</span><span class="path">/api/v1/workdays/compare</span></div>
+          <p class="desc">Days-off totals for each year in a range (max 100 years) — useful
+            for long-range absence forecasting.</p>
+          <table>
+            <tr><th>Param</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>from</code></td><td>integer</td><td>Required.</td></tr>
+            <tr><td><code>to</code></td><td>integer</td><td>Required, ≥ <code>from</code>.</td></tr>
+            <tr><td colspan="3">Plus <code>include</code>, <code>weekend</code>, <code>il</code> as above.</td></tr>
+          </table>
+<pre>$ curl <span class="g">'…/api/v1/workdays/compare?from=2026&amp;to=2036'</span>
+{ <span class="g">"series"</span>: [ { <span class="g">"year"</span>: 2026, <span class="g">"daysOffRequired"</span>: <span class="p">6</span>, … }, … ] }</pre>
+        </div>
+
+        <h2 id="ep-ics">Calendar feed</h2>
+        <div class="endpoint">
+          <div class="sig"><span class="method">GET</span><span class="path">/api/v1/calendar.ics</span></div>
+          <p class="desc">An RFC 5545 iCalendar document of all observed holidays as all-day
+            events, including Hebrew dates and descriptions. Subscribe to it or import it —
+            the same <code>include</code>/<code>weekend</code>/<code>il</code> filters apply.</p>
+          <table>
+            <tr><th>Param</th><th>Type</th><th>Description</th></tr>
+            <tr><td><code>from</code></td><td>integer</td><td>First year. Default: current year (<code>year</code> is an alias).</td></tr>
+            <tr><td><code>to</code></td><td>integer</td><td>Last year, max span 25 years. Default: same as <code>from</code>.</td></tr>
+          </table>
+<pre>$ curl -o jewish-holidays.ics <span class="g">'…/api/v1/calendar.ics?from=2026&amp;to=2028&amp;include=cholhamoed'</span></pre>
+        </div>
+
+        <h2 id="ep-about">Reference</h2>
+        <div class="endpoint">
+          <div class="sig"><span class="method">GET</span><span class="path">/api/v1/about</span></div>
+          <p class="desc">Valid <code>include</code> tokens plus one-paragraph descriptions of
+            each holiday — handy for tooltips and absence-request notes.</p>
+        </div>
+        <div class="endpoint" id="ep-health">
+          <div class="sig"><span class="method">GET</span><span class="path">/api/v1/health</span></div>
+          <p class="desc">Liveness probe: <code>{ "status": "ok" }</code>.</p>
+        </div>
+
+        <h2 id="workday">Integrating with Workday</h2>
+        <p>Two patterns, depending on how much control you have:</p>
+
+        <h3>1 · Holiday calendar import (recommended)</h3>
+        <ol class="steps">
+          <li>Download the feed for your policy, e.g.
+            <code>/api/v1/calendar.ics?from=2026&amp;to=2028&amp;include=cholhamoed</code>.</li>
+          <li>In Workday, open <strong>Maintain Holiday Calendars</strong> and create
+            (or edit) a holiday calendar for the relevant worker population.</li>
+          <li>Add the dates from the feed — each VEVENT is a single all-day holiday with
+            the English name, Hebrew date, and a work-permitted note in the description.
+            (Workday admins typically load these via EIB: export the JSON from
+            <code>/workdays</code>, map <code>date</code> → Holiday Date and
+            <code>title</code> → Holiday Name in the spreadsheet template.)</li>
+          <li>Re-run annually — dates shift against the civil calendar every year.</li>
+        </ol>
+
+        <h3>2 · Absence forecasting via JSON</h3>
+        <p>For staffing models and PTO accrual planning, call
+          <code>/workdays/compare</code> from Workday Studio / Prism (or any middleware)
+          and join <code>daysOffRequired</code> per year against your workforce data.
+          The series is stable and cacheable — fetch it once per year.</p>
+
+        <div class="callout">
+          <span class="t">A note on policy</span>
+          Which observances merit company-recognized leave varies by community and employer.
+          The API never decides for you: Yom Tov is the baseline and everything else is an
+          explicit <code>include</code> token, so the calendar your HRIS imports matches the
+          policy your people team wrote.
+        </div>
+
+        <h2 id="outlook">Outlook, Google &amp; Apple Calendar</h2>
+        <p><strong>Subscribe</strong> (auto-updating): in Google Calendar choose
+          <em>Other calendars → From URL</em>; in Outlook, <em>Add calendar →
+          Subscribe from web</em>; on macOS/iOS, <em>File → New Calendar Subscription</em>.
+          Paste the <code>/calendar.ics</code> URL with your preferred filters.</p>
+        <p><strong>Import</strong> (one-time): download the same URL and import the file.</p>
+
+        <h2 id="errors">Errors</h2>
+        <p>Errors are JSON with an <code>error</code> code and human-readable
+          <code>message</code>:</p>
+<pre>HTTP/1.1 400 Bad Request
+{
+  <span class="g">"error"</span>: <span class="gr">"bad_request"</span>,
+  <span class="g">"message"</span>: <span class="gr">"Unrecognized include token(s): foo. Valid tokens: cholhamoed, tisha-bav, …"</span>
+}</pre>
+        <table>
+          <tr><th>Status</th><th>Meaning</th></tr>
+          <tr><td><code>400</code></td><td>Invalid or out-of-range parameter.</td></tr>
+          <tr><td><code>404</code></td><td>Unknown endpoint.</td></tr>
+          <tr><td><code>500</code></td><td>Unexpected server error.</td></tr>
+        </table>
+
+        <footer>
+          <span class="he">לְכָל זְמַן וְעֵת לְכָל חֵפֶץ</span>
+          Calendar computation by <a href="https://github.com/hebcal/hebcal-es6">@hebcal/core</a> ·
+          <a href="/api/v1/openapi.yaml">OpenAPI 3.1 spec</a> ·
+          <a href="https://github.com/Matthewjmiller07/whenarethejewishholidays">Source on GitHub</a>
+        </footer>
+      </main>
+    </div>
+  </div>
+</body>
+</html>
